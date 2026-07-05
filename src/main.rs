@@ -8,8 +8,9 @@ fn main() {
     let mut input =String::new();
     let stdin = io::stdin();
     stdin.read_line(&mut input).unwrap();
-    match input.trim() {
-        "xyz" =>println!("xyz: command not found"),
-        _ => ()
-    }
+    let result = match input.trim() {
+        "xyz" =>"xyz: command not found",
+        _ => ""
+    };
+    println!("{}", result);
 }
