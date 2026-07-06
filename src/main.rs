@@ -12,7 +12,10 @@ fn main() {
         if &command.trim().to_lowercase() == "exit" {
             break;
         }
-        println!("{}: command not found", command.trim());
+        match command.trim() {
+            i if i.len() >=4 && &i[0..4].to_lowercase()== "echo" => println!("{}", &i[5..]),
+            _=> println!("{}: command not found", command.trim())
+        }
     }
 }
 // match input.trim() {
