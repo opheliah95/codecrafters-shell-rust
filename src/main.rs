@@ -14,6 +14,18 @@ fn main() {
         }
         match command.trim() {
             i if i.len() >=4 && &i[0..4].to_lowercase()== "echo" => println!("{}", &i[5..]),
+            i if i.len() >=4 && &i[0..4].to_lowercase()=="type" => {
+                let target= &i[5..9];
+                let arr = vec! [String::from("echo"),
+                                String::from("exit"),
+                                String::from("type")];
+               let found = arr.iter().any(|result| result == target);
+               if found {
+                    println!("{} is a shell builtin", target);
+               } else {
+                    println!("{}: command not found", target);
+               }
+            }
             _=> println!("{}: command not found", command.trim())
         }
     }
