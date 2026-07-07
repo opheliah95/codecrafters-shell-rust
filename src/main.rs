@@ -5,11 +5,11 @@ use std::env;
 fn main() {
     //TODO: Uncomment the code below to pass the first stage
     loop {
-        let env_args:Vec<String> = env::args().collect();
-        println!("Programme name: {}", env_args[0]);
-        for (i, arg) in env_args.iter().enumerate() {
-            println!("the {i} arg is {arg} ")
-        }
+        // let env_args:Vec<String> = env::args().collect();
+        // println!("Programme name: {}", env_args[0]);
+        // for (i, arg) in env_args.iter().enumerate() {
+        //     println!("the {i} arg is {arg} ")
+        // }
         
 
         print!("$ ");
