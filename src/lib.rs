@@ -65,17 +65,17 @@ use std::path::Path;
 
     pub fn run_external_program(cmd: &String) -> bool {
         let args: Vec<String> = cmd.split(" ").map(|x| x.to_string()).collect();
-        println!(
-            "Program was passed {} args (including program name).",
-            args.len()
-        );
-        for (index, arg) in args.iter().enumerate() {
-            if (index == 0) {
-                println!("Arg #{} (program name): {}", index, arg)
-            } else {
-                println!("Arg #{}: {}", index, arg)
-            }
-        }
+        // println!(
+        //     "Program was passed {} args (including program name).",
+        //     args.len()
+        // );
+        // for (index, arg) in args.iter().enumerate() {
+        //     if (index == 0) {
+        //         println!("Arg #{} (program name): {}", index, arg)
+        //     } else {
+        //         println!("Arg #{}: {}", index, arg)
+        //     }
+        // }
 
         let paths = match get_env_path() {
             Some(p) => p,
