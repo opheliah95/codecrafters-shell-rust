@@ -1,6 +1,6 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
-use codecrafters_shell::solutions::{check_valid_path, get_env_path, type_impl};
+use codecrafters_shell::solutions::{check_valid_path, get_env_path, type_impl, run_external_program};
 
 fn main() {
     //TODO: Uncomment the code below to pass the first stage
@@ -20,7 +20,11 @@ fn main() {
             ["echo", ..] => println!("{}", &input[5..]),
             ["type", args @ ("echo" | "exit" | "type")] => println!("{args} is a shell builtin"),
             ["type", args @ ..] => check_valid_path(args),
-            _ => println!("{}: command not found", input),
+            _ => {
+                if !run_external_program(&input) {
+                    println!("{}: command not found", input)
+                }
+            } 
         }
     }
 }

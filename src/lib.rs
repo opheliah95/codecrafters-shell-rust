@@ -1,7 +1,9 @@
 pub mod solutions {
     use is_executable::IsExecutable;
     use std::env;
-    use std::path::Path;
+    use std::io::stdout;
+use std::path::Path;
+    use std::process::Command;
 
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
@@ -59,5 +61,43 @@ pub mod solutions {
                 println!("{first_arg}: not found")
             }
         }
+    }
+
+    pub fn run_external_program(cmd: &String) -> bool {
+        let args: Vec<String> = cmd.split(" ").map(|x| x.to_string()).collect();
+        println!(
+            "Program was passed {} args (including program name).",
+            args.len()
+        );
+        for (index, arg) in args.iter().enumerate() {
+            if (index == 0) {
+                println!("Arg #{} (program name): {}", index, arg)
+            } else {
+                println!("Arg #{}: {}", index, arg)
+            }
+        }
+
+        let paths = match get_env_path() {
+            Some(p) => p,
+            None => vec!["/usr/bin", "/usr/local/bin"]
+                .into_iter()
+                .map(|x| x.to_string())
+                .collect(),
+        };
+
+        for path in &paths {
+            let full_path = Path::new(path).join(&args[0]);
+            if full_path.is_executable() {
+               // execute command etc git push 
+               let output = Command::new(&args[0])
+                                        .args(&args[1..])
+                                        .output()
+                                        .expect("Program  not found");
+                let stdout = String::from_utf8_lossy(&output.stdout);
+                println!("{stdout}");
+                break;
+            }
+        }
+        return true;
     }
 }
