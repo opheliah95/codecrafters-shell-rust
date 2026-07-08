@@ -65,7 +65,7 @@ use std::path::Path;
 
     pub fn run_external_program(cmd: &String) -> bool {
         let args: Vec<String> = cmd.split(" ").map(|x| x.to_string()).collect();
-        println!("$ {cmd}");
+        //println!("$ {cmd}");
         // println!(
         //     "Program was passed {} args (including program name).",
         //     args.len()
@@ -96,9 +96,9 @@ use std::path::Path;
                                         .expect("Program  not found");
                 let stdout = String::from_utf8_lossy(&output.stdout);
                 println!("{stdout}");
-                break;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 }
