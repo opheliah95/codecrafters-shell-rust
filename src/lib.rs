@@ -65,6 +65,7 @@ use std::path::Path;
 
     pub fn run_external_program(cmd: &String) -> bool {
         let args: Vec<String> = cmd.split(" ").map(|x| x.to_string()).collect();
+        println!("$ {cmd}");
         // println!(
         //     "Program was passed {} args (including program name).",
         //     args.len()
