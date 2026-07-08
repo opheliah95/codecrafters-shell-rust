@@ -95,7 +95,7 @@ use std::path::Path;
                                         .output()
                                         .expect("Program  not found");
                 let stdout = String::from_utf8_lossy(&output.stdout);
-                println!("{stdout}");
+                print!("{}", stdout); 
                 return true;
             }
         }
