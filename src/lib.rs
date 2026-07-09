@@ -101,4 +101,11 @@ use std::path::Path;
         }
         return false;
     }
+
+    pub fn get_pwd() {
+       if let Ok(cwd) = env::current_dir() {
+        println!("{}", cwd.display());
+       }
+        
+    }
 }
