@@ -19,7 +19,7 @@ fn main() {
             ["echo"] => println!(),
             ["echo", ..] => println!("{}", &input[5..]),
             ["pwd"] => get_pwd(),
-            ["type", args @ ("echo" | "exit" | "type")] => println!("{args} is a shell builtin"),
+            ["type", args @ ("echo" | "exit" | "type" | "pwd")] => println!("{args} is a shell builtin"),
             ["type", args @ ..] => check_valid_path(args),
             _ => {
                 if !run_external_program(&input) {
