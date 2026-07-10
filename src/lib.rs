@@ -5,6 +5,8 @@ pub mod solutions {
     use std::path::{Path, PathBuf};
     use std::process::Command;
     mod cmd;
+    use regex::Regex;
+
 
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
@@ -142,11 +144,19 @@ pub mod solutions {
         if start == end && ['\'', '\"'].contains(&start) {
             return true;
         }
+        
+        let re_single = Regex::new(r#"'.*'"#).unwrap();
+        let re_double = Regex::new(r#"".*"$"#).unwrap();
+        if re_single.is_match(args) || re_double.is_match(args) {
+            return true;
+        }
+
         return false
     }
     pub fn clean_input (args: &str) -> String{
         let mut result: String = args.to_string();
         if ! is_in_quotes(&result) {
+            
             result = result.split_whitespace().collect::<Vec<&str>>().join(" ")
         }
 
