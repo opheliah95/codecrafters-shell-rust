@@ -115,13 +115,14 @@ pub mod solutions {
                 // handle tlide
                 let mut first_arg = &args[0];
                 let path: PathBuf  = if args[0].trim() == "~" {
-                    std::env::home_dir().unwrap_or_default()
+                    std::env::home_dir().unwrap_or_else(|| PathBuf::from("/home"))
+
                 } else {
                     PathBuf::from(&first_arg)
                 };
 
                 if path.exists() {
-                    env::set_current_dir(first_arg);
+                    env::set_current_dir(path);
                     //println!("Current dir: {:?}", env::current_dir());
                 } else {
                     println!("cd: {}: No such file or directory", first_arg);
