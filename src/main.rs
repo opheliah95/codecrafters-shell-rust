@@ -1,6 +1,6 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
-use codecrafters_shell::solutions::{cd_path, check_valid_path, get_env_path, get_pwd, run_external_program, type_impl};
+use codecrafters_shell::solutions::{cd_path, check_valid_path, clean_input, get_env_path, get_pwd, run_external_program, type_impl};
 
 fn main() {
     //TODO: Uncomment the code below to pass the first stage
@@ -11,7 +11,7 @@ fn main() {
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
         input = input.trim().to_string();
-
+        input = clean_input(&input);
         let args: Vec<&str> = input.split(" ").collect();
         match args.as_slice() {
             [] => (),

@@ -4,6 +4,7 @@ pub mod solutions {
     use std::io::stdout;
     use std::path::{Path, PathBuf};
     use std::process::Command;
+    mod cmd;
 
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
@@ -134,4 +135,31 @@ pub mod solutions {
             }
         }
     }
+
+    pub fn is_in_quotes(args: &str) -> bool {
+        let start = args.chars().next().unwrap();
+        let end: char = args.chars().last().unwrap();
+        if start == end && ['\'', '\"'].contains(&start) {
+            return true;
+        }
+        return false
+    }
+    pub fn clean_input (args: &str) -> String{
+        let mut result: String = args.to_string();
+        if ! is_in_quotes(&result) {
+            result = result.split_whitespace().collect::<Vec<&str>>().join(" ")
+        }
+
+        //replace empty quote
+        result =result.replace("\'\'", "")
+                      .replace("\"\"", "");
+        let specials = ["\"", "\'"];
+        for i in specials {
+            result = result.replace(i, "");
+        }
+        //println!("cleaned is {result}");
+        result
+    }
+
+
 }
