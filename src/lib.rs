@@ -2,7 +2,7 @@ pub mod solutions {
     use is_executable::IsExecutable;
     use std::env;
     use std::io::stdout;
-use std::path::Path;
+    use std::path::{Path, PathBuf};
     use std::process::Command;
 
     pub fn type_impl(input: &str) {
@@ -89,13 +89,13 @@ use std::path::Path;
         for path in &paths {
             let full_path = Path::new(path).join(&args[0]);
             if full_path.is_executable() {
-               // execute command etc git push 
-               let output = Command::new(&args[0])
-                                        .args(&args[1..])
-                                        .output()
-                                        .expect("Program  not found");
+                // execute command etc git push
+                let output = Command::new(&args[0])
+                    .args(&args[1..])
+                    .output()
+                    .expect("Program  not found");
                 let stdout = String::from_utf8_lossy(&output.stdout);
-                print!("{}", stdout); 
+                print!("{}", stdout);
                 return true;
             }
         }
@@ -103,9 +103,28 @@ use std::path::Path;
     }
 
     pub fn get_pwd() {
-       if let Ok(cwd) = env::current_dir() {
-        println!("{}", cwd.display());
-       }
-        
+        if let Ok(cwd) = env::current_dir() {
+            println!("{}", cwd.display());
+        }
+    }
+
+    pub fn cd_path(args: &[&str]) {
+        match args.len() == 1 {
+            true => {
+                println!("the path is: {}", args[0]);
+                // check if path exist, if path exist change directory to path
+                let path: PathBuf = PathBuf::from(&args[0]);
+                if path.exists() {
+                    env::set_current_dir(args[0]);
+                    //println!("Current dir: {:?}", env::current_dir());
+                } else {
+                    println!("cd: {}: No such file or directory", args[0]);
+                }
+            }
+
+            false => {
+                println!("cd: {}: No such file or directory", args.join(" "))
+            }
+        }
     }
 }

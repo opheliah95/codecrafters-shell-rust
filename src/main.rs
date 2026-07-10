@@ -1,6 +1,6 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
-use codecrafters_shell::solutions::{check_valid_path, get_env_path, get_pwd, run_external_program, type_impl};
+use codecrafters_shell::solutions::{cd_path, check_valid_path, get_env_path, get_pwd, run_external_program, type_impl};
 
 fn main() {
     //TODO: Uncomment the code below to pass the first stage
@@ -19,7 +19,8 @@ fn main() {
             ["echo"] => println!(),
             ["echo", ..] => println!("{}", &input[5..]),
             ["pwd"] => get_pwd(),
-            ["type", args @ ("echo" | "exit" | "type" | "pwd")] => println!("{args} is a shell builtin"),
+            ["cd", args @..] => cd_path(args),
+            ["type", args @ ("echo" | "exit" | "type" | "pwd" | "cd")] => println!("{args} is a shell builtin"),
             ["type", args @ ..] => check_valid_path(args),
             _ => {
                 if !run_external_program(&input) {
