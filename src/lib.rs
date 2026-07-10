@@ -111,7 +111,7 @@ pub mod solutions {
     pub fn cd_path(args: &[&str]) {
         match args.len() == 1 {
             true => {
-                println!("the path is: {}", args[0]);
+                //println!("the path is: {}", args[0]);
                 // check if path exist, if path exist change directory to path
                 let path: PathBuf = PathBuf::from(&args[0]);
                 if path.exists() {
