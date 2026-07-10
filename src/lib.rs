@@ -112,13 +112,19 @@ pub mod solutions {
         match args.len() == 1 {
             true => {
                 //println!("the path is: {}", args[0]);
-                // check if path exist, if path exist change directory to path
-                let path: PathBuf = PathBuf::from(&args[0]);
+                // handle tlide
+                let mut first_arg = &args[0];
+                let path: PathBuf  = if args[0].trim() == "~" {
+                    std::env::home_dir().unwrap_or_default()
+                } else {
+                    PathBuf::from(&first_arg)
+                };
+
                 if path.exists() {
-                    env::set_current_dir(args[0]);
+                    env::set_current_dir(first_arg);
                     //println!("Current dir: {:?}", env::current_dir());
                 } else {
-                    println!("cd: {}: No such file or directory", args[0]);
+                    println!("cd: {}: No such file or directory", first_arg);
                 }
             }
 
