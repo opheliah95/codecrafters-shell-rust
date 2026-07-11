@@ -155,7 +155,7 @@ pub mod solutions {
     }
     pub fn clean_input (args: &str) -> String{
         let mut result: String = args.to_string();
-        if ! is_in_quotes(&result) {
+        if ! is_in_quotes(&result) || &args[..3] =="cat" {
             
             result = result.split_whitespace().collect::<Vec<&str>>().join(" ")
         }
