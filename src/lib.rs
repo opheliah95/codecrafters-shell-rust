@@ -7,7 +7,6 @@ pub mod solutions {
     mod cmd;
     use regex::Regex;
 
-
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
         match args.as_slice() {
@@ -117,9 +116,8 @@ pub mod solutions {
                 //println!("the path is: {}", args[0]);
                 // handle tlide
                 let mut first_arg = &args[0];
-                let path: PathBuf  = if args[0].trim() == "~" {
+                let path: PathBuf = if args[0].trim() == "~" {
                     std::env::home_dir().unwrap_or_else(|| PathBuf::from("/home"))
-
                 } else {
                     PathBuf::from(&first_arg)
                 };
@@ -144,26 +142,38 @@ pub mod solutions {
         if start == end && ['\'', '\"'].contains(&start) {
             return true;
         }
-        
+
         let re_single = Regex::new(r#"'.*'"#).unwrap();
         let re_double = Regex::new(r#"".*"$"#).unwrap();
         if re_single.is_match(args) || re_double.is_match(args) {
             return true;
         }
 
-        return false
+        return false;
     }
-    pub fn clean_input (args: &str) -> String{
+
+    // pub fn check_cat (args:  &str) -> String {
+    //     let re_single = Regex::new(r#"'.*'"#).unwrap();
+    //     let re_double = Regex::new(r#"".*"$"#).unwrap();
+    //     let mut result = String::new();
+    //     for cap in re_single.captures_iter(args) {
+    //         println!("captured is: {:#?}", cap);
+    //     }
+    //     args.to_string()
+
+    // }
+    pub fn clean_input(args: &str) -> String {
         let mut result: String = args.to_string();
-        if ! is_in_quotes(&result) || &args[..3] =="cat" {
-            
+        let is_cat = args.len() >= 3 && &args[..3] == "cat";
+        if !is_in_quotes(&result) {
             result = result.split_whitespace().collect::<Vec<&str>>().join(" ")
         }
+        if is_cat {
+            return result;
+        }
 
-        //replace empty quote
-        result =result.replace("\'\'", "")
-                      .replace("\"\"", "");
-        let specials = ["\"", "\'"];
+        result = result.replace("''", "").replace("\"\"", "");
+        let specials = ["\"", "'"];
         for i in specials {
             result = result.replace(i, "");
         }
@@ -171,5 +181,38 @@ pub mod solutions {
         result
     }
 
+    pub fn get_cat(args: &str) {
+        let re_single = Regex::new(r#"'([^']*)'"#).unwrap();;
 
+        let mut result = Vec::new();
+
+        if !re_single.is_match(args) {
+            run_external_program(&args.to_string());
+            return;
+        } else {
+            for cap in re_single.captures_iter(args) {
+                if let Some(m) = cap.get(1) {
+                    result.push(m.as_str());
+                    //println!("Found item: {}", m.as_str());
+                }
+            }
+            let fixed_result = result
+                .into_iter()
+                .map(|item| item.replace("'", ""))
+                .collect::<Vec<String>>();
+            //println!("updated result is now {:?}", fixed_result);
+
+            let output = Command::new("cat")
+                .args(fixed_result)
+                .output()
+                .expect("Program  not found");
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            print!("{}", stdout.trim());
+            if !output.status.success() {
+            eprintln!("Error: {}", String::from_utf8_lossy(&output.stderr));
+            return;
+        }
+           
+        }
+    }
 }
