@@ -207,7 +207,7 @@ pub mod solutions {
                 .output()
                 .expect("Program  not found");
             let stdout = String::from_utf8_lossy(&output.stdout);
-            print!("{}", stdout.trim());
+            print!("{}", stdout);
             if !output.status.success() {
             eprintln!("Error: {}", String::from_utf8_lossy(&output.stderr));
             return;
