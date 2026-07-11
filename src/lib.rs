@@ -165,54 +165,84 @@ pub mod solutions {
     pub fn clean_input(args: &str) -> String {
         let mut result: String = args.to_string();
         let is_cat = args.len() >= 3 && &args[..3] == "cat";
-        if !is_in_quotes(&result) {
-            result = result.split_whitespace().collect::<Vec<&str>>().join(" ")
-        }
+        let re_single = Regex::new(r#"'.*'"#).unwrap();
+        let re_double = Regex::new(r#""([^"]*)""#).unwrap();
         if is_cat {
             return result;
         }
 
-        result = result.replace("''", "").replace("\"\"", "");
-        let specials = ["\"", "'"];
-        for i in specials {
-            result = result.replace(i, "");
+        if !is_in_quotes(&result) {
+            result = result.split_whitespace().collect::<Vec<&str>>().join(" ")
         }
-        //println!("cleaned is {result}");
+
+        //match single quotes
+        if re_single.is_match(&result) {
+            result = result.replace("''", "").replace("\"\"", "");
+            let specials = ["\"", "'"];
+            for i in specials {
+                result = result.replace(i, "");
+            }
+        }
+
+        //match single quotes
+        if re_double.is_match(&result) {
+            let mut quoted_result =Vec::new();
+            for cap in re_double.captures_iter(&result) {
+                if let Some(m) = cap.get(1) {
+                    quoted_result.push(m.as_str());
+                }
+            }
+           
+            let first_arg = quoted_result.join(" ");
+            let mut cmd_start = args.split_whitespace().next().unwrap_or("");
+            result = format!("{} {}", cmd_start, first_arg);
+            //println!("formated reuslt is {}", result);
+        }
+
+        
         result
     }
 
     pub fn get_cat(args: &str) {
-        let re_single = Regex::new(r#"'([^']*)'"#).unwrap();;
-
+        let re_single = Regex::new(r#"'([^']*)'"#).unwrap();
+        let re_double = Regex::new(r#""([^"]*)""#).unwrap();
         let mut result = Vec::new();
 
-        if !re_single.is_match(args) {
+        // Collect matches from single quotes
+        for cap in re_single.captures_iter(args) {
+            if let Some(m) = cap.get(1) {
+                result.push(m.as_str().to_string());
+            }
+        }
+
+        // Collect matches from double quotes
+        for cap in re_double.captures_iter(args) {
+            if let Some(m) = cap.get(1) {
+                result.push(m.as_str().to_string());
+            }
+        }
+
+        // If we found no quoted arguments, run as a raw external command
+        if result.is_empty() {
             run_external_program(&args.to_string());
             return;
-        } else {
-            for cap in re_single.captures_iter(args) {
-                if let Some(m) = cap.get(1) {
-                    result.push(m.as_str());
-                    //println!("Found item: {}", m.as_str());
-                }
-            }
-            let fixed_result = result
-                .into_iter()
-                .map(|item| item.replace("'", ""))
-                .collect::<Vec<String>>();
-            //println!("updated result is now {:?}", fixed_result);
+        }
 
-            let output = Command::new("cat")
-                .args(fixed_result)
-                .output()
-                .expect("Program  not found");
-            let stdout = String::from_utf8_lossy(&output.stdout);
-            print!("{}", stdout);
-            if !output.status.success() {
+        let fixed_result = result
+            .into_iter()
+            .map(|item| item.replace("'", ""))
+            .collect::<Vec<String>>();
+        println!("updated result is now {:?}", fixed_result);
+
+        let output = Command::new("cat")
+            .args(fixed_result)
+            .output()
+            .expect("Program  not found");
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        print!("{}", stdout);
+        if !output.status.success() {
             eprintln!("Error: {}", String::from_utf8_lossy(&output.stderr));
             return;
-        }
-           
         }
     }
 }
