@@ -229,10 +229,15 @@ pub mod solutions {
             return;
         }
 
-        let fixed_result = result
+        let mut fixed_result =Vec::new();
+        match re_double.is_match(args) {
+            true => fixed_result = result,
+
+            false =>fixed_result = result
             .into_iter()
             .map(|item| item.replace("'", ""))
-            .collect::<Vec<String>>();
+            .collect::<Vec<String>>()
+        }
         //println!("updated result is now {:?}", fixed_result);
 
         let output = Command::new("cat")
