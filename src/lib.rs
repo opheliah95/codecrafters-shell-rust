@@ -6,6 +6,7 @@ pub mod solutions {
     use std::process::Command;
     mod cmd;
     use regex::Regex;
+    use shellwords;
 
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
@@ -186,12 +187,12 @@ pub mod solutions {
 
         //match single quotes
         if re_double.is_match(&result) {
-            let mut quoted_result =Vec::new();
-            for cap in re_double.captures_iter(&result) {
-                if let Some(m) = cap.get(1) {
-                    quoted_result.push(m.as_str());
-                }
-            }
+            let quoted_result =shellwords::split(&result).unwrap();
+            // for cap in re_double.captures_iter(&result) {
+            //     if let Some(m) = cap.get(1) {
+            //         quoted_result.push(m.as_str());
+            //     }
+            // }
            
             let first_arg = quoted_result.join(" ");
             let mut cmd_start = args.split_whitespace().next().unwrap_or("");
