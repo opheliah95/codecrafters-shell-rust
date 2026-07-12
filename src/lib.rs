@@ -233,7 +233,7 @@ pub mod solutions {
             .into_iter()
             .map(|item| item.replace("'", ""))
             .collect::<Vec<String>>();
-        println!("updated result is now {:?}", fixed_result);
+        //println!("updated result is now {:?}", fixed_result);
 
         let output = Command::new("cat")
             .args(fixed_result)
