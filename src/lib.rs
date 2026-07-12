@@ -194,9 +194,9 @@ pub mod solutions {
             //     }
             // }
            
-            let first_arg = quoted_result.join(" ");
-            let mut cmd_start = args.split_whitespace().next().unwrap_or("");
-            result = format!("{} {}", cmd_start, first_arg);
+            result = quoted_result.join(" ");
+            // let mut cmd_start = args.split_whitespace().next().unwrap_or("");
+            // result = format!("{} {}", cmd_start, first_arg);
             //println!("formated reuslt is {}", result);
         }
 
