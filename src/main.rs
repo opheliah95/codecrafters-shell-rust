@@ -1,4 +1,4 @@
-use codecrafters_shell::solutions::{cd_path, check_valid_path, run_cmd};
+use codecrafters_shell::solutions::{cd_path, check_valid_path, run_cmd, get_pwd};
 use shellwords;
 #[allow(unused_imports)]
 use std::io::{self, Write};
@@ -19,6 +19,7 @@ fn main() {
             cmd if cmd.len() == 0 => continue,
             cmd if *cmd == "exit"=> break,
             cmd if *cmd == "cd" => cd_path(&args[1..]),
+            cmd if *cmd =="pwd" => get_pwd(),
             cmd if *cmd == "type" => {
                 if ["echo", "exit", "type", "pwd"].contains(&args[1].as_str()) {
                     println!("{} is a shell builtin", &args[1])
