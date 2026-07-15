@@ -41,32 +41,38 @@ pub mod solutions {
         }
     }
 
-    pub fn check_valid_path(args: &[&str]) {
-        let first_arg = args[0];
-        let env_paths = get_env_path();
-        let mut found = false;
-        match env_paths {
-            Some(paths) => {
-                for path in &paths {
-                    let full_path = Path::new(path).join(first_arg);
-                    if full_path.is_executable() {
-                        println!("{} is {}", first_arg, full_path.display());
-                        found = true;
-                        break;
-                    }
-                }
-                if !found {
-                    println!("{first_arg}: not found");
-                }
-            }
+    pub fn check_valid_path(args: &[String]) {
+        let first_arg = &args[1];
+        let mut defaults = vec!["/usr/bin", "/usr/local/bin"]
+            .into_iter()
+            .map(String::from)
+            .collect::<Vec<String>>();
 
-            _ => {
-                println!("{first_arg}: not found")
+        let paths = match get_env_path() {
+            Some(mut p) => {
+                p.append(&mut defaults);
+                p
             }
+            None => defaults,
+        };
+
+        // If you specifically wanted to append defaults to an existing path list:
+        // let combined = paths + defaults;
+        let mut found = false;
+        for path in &paths {
+            let full_path = Path::new(path).join(first_arg);
+            if full_path.is_executable() {
+                println!("{} is {}", first_arg, full_path.display());
+                found = true;
+                break;
+            }
+        }
+        if !found {
+            println!("{first_arg}: not found");
         }
     }
 
-    pub fn run_external_program(cmd: &String) -> bool {
+    pub fn run_external_program(cmd: &str) -> bool {
         let args: Vec<String> = cmd.split(" ").map(|x| x.to_string()).collect();
         //println!("$ {cmd}");
         // println!(
@@ -111,7 +117,7 @@ pub mod solutions {
         }
     }
 
-    pub fn cd_path(args: &[&str]) {
+    pub fn cd_path(args: &[String]) {
         match args.len() == 1 {
             true => {
                 //println!("the path is: {}", args[0]);
@@ -179,7 +185,7 @@ pub mod solutions {
         //match single quotes
         if re_single.is_match(&result) {
             result = result.replace("''", "").replace("\"\"", "");
-            let specials = ["\"", "'"];
+            let specials = ["\"", "'", "\\"];
             for i in specials {
                 result = result.replace(i, "");
             }
@@ -187,20 +193,19 @@ pub mod solutions {
 
         //match single quotes
         if re_double.is_match(&result) {
-            let quoted_result =shellwords::split(&result).unwrap();
+            let quoted_result = shellwords::split(&result).unwrap();
             // for cap in re_double.captures_iter(&result) {
             //     if let Some(m) = cap.get(1) {
             //         quoted_result.push(m.as_str());
             //     }
             // }
-           
+
             result = quoted_result.join(" ");
             // let mut cmd_start = args.split_whitespace().next().unwrap_or("");
             // result = format!("{} {}", cmd_start, first_arg);
             //println!("formated reuslt is {}", result);
         }
 
-        
         result
     }
 
@@ -229,14 +234,16 @@ pub mod solutions {
             return;
         }
 
-        let mut fixed_result =Vec::new();
+        let mut fixed_result = Vec::new();
         match re_double.is_match(args) {
             true => fixed_result = result,
 
-            false =>fixed_result = result
-            .into_iter()
-            .map(|item| item.replace("'", ""))
-            .collect::<Vec<String>>()
+            false => {
+                fixed_result = result
+                    .into_iter()
+                    .map(|item| item.replace("'", ""))
+                    .collect::<Vec<String>>()
+            }
         }
         //println!("updated result is now {:?}", fixed_result);
 
@@ -249,6 +256,21 @@ pub mod solutions {
         if !output.status.success() {
             eprintln!("Error: {}", String::from_utf8_lossy(&output.stderr));
             return;
+        }
+    }
+
+    pub fn run_cmd(args: Vec<String>) -> bool {
+        let output = Command::new(&args[0]).args(&args[1..]).output();
+
+        match output {
+            Ok(out) => {
+                let stdout = String::from_utf8_lossy(&out.stdout);
+                print!("{}", stdout);
+                return true;
+            }
+            Err(_) => {
+                return false;
+            }
         }
     }
 }
