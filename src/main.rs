@@ -1,4 +1,6 @@
-use codecrafters_shell::solutions::{cd_path, check_valid_path, run_cmd, get_pwd, run_cmd_with_output};
+use codecrafters_shell::solutions::{
+    cd_path, check_valid_path, get_pwd, run_cmd, run_cmd_with_output,
+};
 use shellwords;
 #[allow(unused_imports)]
 use std::io::{self, Write};
@@ -18,39 +20,44 @@ fn main() {
             let output = ["1>", ">"];
             let mut split_index: Option<usize> = None;
             for (index, val) in args.iter().enumerate() {
-                if output.contains(&val.as_str()){
+                if output.contains(&val.as_str()) {
                     split_index = Some(index);
                     break;
                 }
             }
 
             if let Some(index) = split_index {
-                let file_dir = args.split_off(index+1);
+                if index + 1 >= args.len() {
+                    eprintln!("Error: Missing file path after redirection");
+                    // Don't break, just continue to next prompt
+                    continue;
+                }
+
+                let file_dir = args.split_off(index + 1);
                 args.pop();
                 // println!("now args is {:?}", args);
                 // println!("now file dir is: {:?}", file_dir);
                 run_cmd_with_output(args.clone(), file_dir[0].to_string());
                 continue;
-
             }
             match &args[0] {
-            cmd if cmd.len() == 0 => continue,
-            cmd if *cmd == "exit"=> break,
-            cmd if *cmd == "cd" => cd_path(&args[1..]),
-            cmd if *cmd =="pwd" => get_pwd(),
-            cmd if *cmd == "type" => {
-                if ["echo", "exit", "type", "pwd"].contains(&args[1].as_str()) {
-                    println!("{} is a shell builtin", &args[1])
-                } else {
-                    check_valid_path(&args);
+                cmd if cmd.len() == 0 => continue,
+                cmd if *cmd == "exit" => break,
+                cmd if *cmd == "cd" => cd_path(&args[1..]),
+                cmd if *cmd == "pwd" => get_pwd(),
+                cmd if *cmd == "type" => {
+                    if ["echo", "exit", "type", "pwd"].contains(&args[1].as_str()) {
+                        println!("{} is a shell builtin", &args[1])
+                    } else {
+                        check_valid_path(&args);
+                    }
                 }
-            },
-            _ => {
-                if !run_cmd(args) {
-                    println!("{}: command not found", input)
+                _ => {
+                    if !run_cmd(args) {
+                        println!("{}: command not found", input)
+                    }
                 }
             }
-        }
         }
     }
 }
