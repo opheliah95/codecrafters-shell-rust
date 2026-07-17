@@ -17,7 +17,7 @@ fn main() {
         let mut args = shellwords::split(&input).unwrap();
         //println!("teh agrs: {:?}", args);
         if args.len() >= 1 {
-            let output = ["1>", ">"];
+            let output = ["1>", ">", "2>"];
             let mut split_index: Option<usize> = None;
             for (index, val) in args.iter().enumerate() {
                 if output.contains(&val.as_str()) {
@@ -34,10 +34,10 @@ fn main() {
                 }
 
                 let file_dir = args.split_off(index + 1);
-                args.pop();
+                let operator = args.pop();
                 // println!("now args is {:?}", args);
                 // println!("now file dir is: {:?}", file_dir);
-                run_cmd_with_output(args.clone(), file_dir[0].to_string());
+                run_cmd_with_output(args.clone(), file_dir[0].to_string(), operator);
                 continue;
             }
             match &args[0] {

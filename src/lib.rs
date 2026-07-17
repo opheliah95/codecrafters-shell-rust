@@ -275,7 +275,7 @@ pub mod solutions {
         }
     }
 
-    pub fn run_cmd_with_output(cmd: Vec<String>, dir: String) -> bool {
+    pub fn run_cmd_with_output(cmd: Vec<String>, dir: String, operator: Option<String>) -> bool {
         use std::fs;
 
         match Command::new(&cmd[0]).args(&cmd[1..]).output() {
@@ -299,14 +299,27 @@ pub mod solutions {
 
                     return true;
                 } else {
-                    let stderr = String::from_utf8_lossy(&output.stderr);
-                    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-                    let path = Path::new(&dir);
-                    fs::write(&path, stdout);
-                    print!("{stderr}");
-                    // let error_args: Vec<String> = cmd.iter().map(|x| format!("{}: ", x)).collect();
-                    // let error_args_result = error_args.join("");
-                    // println!("{error_args_result}No such file or directory",);
+                    let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+                    //force even bad output to write!!!
+                    match operator {
+                        Some(op) => {
+                            if op == "2>" {
+                                 let path = Path::new(&dir);
+                                 fs::write(&path, stderr);
+                            } else {
+                                let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+                                let path = Path::new(&dir);
+                                fs::write(&path, stdout);
+                                print!("{stderr}");
+                            }
+
+                            return true;
+                        }
+
+                        None => return false, // let error_args: Vec<String> = cmd.iter().map(|x| format!("{}: ", x)).collect();
+                                              // let error_args_result = error_args.join("");
+                                              // println!("{error_args_result}No such file or directory",);
+                    }
                     return false;
                 }
             }
