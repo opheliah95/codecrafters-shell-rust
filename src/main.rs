@@ -1,4 +1,4 @@
-use codecrafters_shell::solutions::{cd_path, check_valid_path, run_cmd, get_pwd};
+use codecrafters_shell::solutions::{cd_path, check_valid_path, run_cmd, get_pwd, run_cmd_with_output};
 use shellwords;
 #[allow(unused_imports)]
 use std::io::{self, Write};
@@ -12,9 +12,27 @@ fn main() {
         io::stdin().read_line(&mut input).unwrap();
         input = input.trim().to_string();
         //input = clean_input(&input);
-        let args = shellwords::split(&input).unwrap();
+        let mut args = shellwords::split(&input).unwrap();
         //println!("teh agrs: {:?}", args);
         if args.len() >= 1 {
+            let output = ["1>", ">"];
+            let mut split_index: Option<usize> = None;
+            for (index, val) in args.iter().enumerate() {
+                if output.contains(&val.as_str()){
+                    split_index = Some(index);
+                    break;
+                }
+            }
+
+            if let Some(index) = split_index {
+                let file_dir = args.split_off(index+1);
+                args.pop();
+                // println!("now args is {:?}", args);
+                // println!("now file dir is: {:?}", file_dir);
+                run_cmd_with_output(args.clone(), file_dir[0].to_string());
+                break;
+
+            }
             match &args[0] {
             cmd if cmd.len() == 0 => continue,
             cmd if *cmd == "exit"=> break,

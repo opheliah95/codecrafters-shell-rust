@@ -1,4 +1,5 @@
 pub mod solutions {
+    use core::error;
     use is_executable::IsExecutable;
     use std::env;
     use std::io::stdout;
@@ -269,6 +270,47 @@ pub mod solutions {
                 return true;
             }
             Err(_) => {
+                return false;
+            }
+        }
+    }
+
+    pub fn run_cmd_with_output(cmd: Vec<String>, dir: String) -> bool {
+        use std::fs;
+
+        match Command::new(&cmd[0]).args(&cmd[1..]).output() {
+            Ok(output) => {
+                if output.status.success() {
+                    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+                    //println!("output is {}", stdout);
+
+                    let path = Path::new(&dir);
+                    if let Some(parent) = path.parent() {
+                        if let Err(e) = fs::create_dir_all(parent) {
+                            eprintln!("Failed to create directory {:?}: {}", parent, e);
+                            return false;
+                        }
+                    }
+
+                    if let Err(e) = fs::write(&path, stdout) {
+                        eprintln!("Failed to write to file {:?}: {}", path, e);
+                        return false;
+                    }
+
+                    return true;
+                } else {
+                    let error_args: Vec<String> = cmd.iter().map(|x| format!("{}: ", x)).collect();
+                    let error_args_result = error_args.join("");
+                    println!("{error_args_result}No such file or directory",);
+                    return false;
+                }
+            }
+
+            Err(e) => {
+                println!("{e}");
+                let error_args: Vec<String> = cmd.iter().map(|x| format!("{}: ", x)).collect();
+                let error_args_result = error_args.join("");
+                println!("{error_args_result}No such file or directory",);
                 return false;
             }
         }
