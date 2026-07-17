@@ -30,7 +30,7 @@ fn main() {
                 // println!("now args is {:?}", args);
                 // println!("now file dir is: {:?}", file_dir);
                 run_cmd_with_output(args.clone(), file_dir[0].to_string());
-                break;
+                continue;
 
             }
             match &args[0] {
