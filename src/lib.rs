@@ -300,7 +300,7 @@ pub mod solutions {
                     return true;
                 } else {
                     let stderr = String::from_utf8_lossy(&output.stderr);
-                    println!("{stderr}");
+                    print!("{stderr}");
                     // let error_args: Vec<String> = cmd.iter().map(|x| format!("{}: ", x)).collect();
                     // let error_args_result = error_args.join("");
                     // println!("{error_args_result}No such file or directory",);
