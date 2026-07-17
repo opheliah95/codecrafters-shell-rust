@@ -300,6 +300,9 @@ pub mod solutions {
                     return true;
                 } else {
                     let stderr = String::from_utf8_lossy(&output.stderr);
+                    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+                    let path = Path::new(&dir);
+                    fs::write(&path, stdout);
                     print!("{stderr}");
                     // let error_args: Vec<String> = cmd.iter().map(|x| format!("{}: ", x)).collect();
                     // let error_args_result = error_args.join("");
