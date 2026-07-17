@@ -299,9 +299,11 @@ pub mod solutions {
 
                     return true;
                 } else {
-                    let error_args: Vec<String> = cmd.iter().map(|x| format!("{}: ", x)).collect();
-                    let error_args_result = error_args.join("");
-                    println!("{error_args_result}No such file or directory",);
+                    let stderr = String::from_utf8_lossy(&output.stderr);
+                    println!("{stderr}");
+                    // let error_args: Vec<String> = cmd.iter().map(|x| format!("{}: ", x)).collect();
+                    // let error_args_result = error_args.join("");
+                    // println!("{error_args_result}No such file or directory",);
                     return false;
                 }
             }
