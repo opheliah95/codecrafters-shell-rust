@@ -17,7 +17,7 @@ fn main() {
         let mut args = shellwords::split(&input).unwrap();
         //println!("teh agrs: {:?}", args);
         if args.len() >= 1 {
-            let output = ["1>", ">", "2>"];
+            let output = ["1>", ">", "2>", ">>" , "1>>"];
             let mut split_index: Option<usize> = None;
             for (index, val) in args.iter().enumerate() {
                 if output.contains(&val.as_str()) {

@@ -280,6 +280,7 @@ pub mod solutions {
 
         match Command::new(&cmd[0]).args(&cmd[1..]).output() {
             Ok(output) => {
+                let path = Path::new(&dir);
                 if output.status.success() {
                     let mut stdout = String::from_utf8_lossy(&output.stdout).to_string();
                     if let Some(op) = operator {
@@ -287,9 +288,20 @@ pub mod solutions {
                             print!("{stdout}");
                             stdout = "".to_string();
                         }
+
+                        //append to existing files as a new line
+                        if [">>", "1>>"].contains(&op.as_str()) {
+                            let mut contents = fs::read_to_string(path)
+                                .expect("Should have been able to read the file");
+
+                            let formated_stdout = format!("{stdout}");
+                            contents.push_str(&formated_stdout);
+                            stdout = contents;
+                            //println!("the conten is{stdout}");
+                        }
                     };
 
-                    let path = Path::new(&dir);
+                    
                     if let Some(parent) = path.parent() {
                         if let Err(e) = fs::create_dir_all(parent) {
                             eprintln!("Failed to create directory {:?}: {}", parent, e);
