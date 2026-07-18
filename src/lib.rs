@@ -282,7 +282,11 @@ pub mod solutions {
             Ok(output) => {
                 if output.status.success() {
                     let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-                    //println!("output is {}", stdout);
+                    if let Some(op) = operator {
+                        if op == "2>" {
+                            print!("{stdout}");
+                        }
+                    };
 
                     let path = Path::new(&dir);
                     if let Some(parent) = path.parent() {
@@ -305,11 +309,10 @@ pub mod solutions {
                     match operator {
                         Some(op) => {
                             if op == "2>" {
-                                 let path = Path::new(&dir);
-                                 fs::write(&path, stderr);
-                                 print!("{stdout}");
+                                let path = Path::new(&dir);
+                                fs::write(&path, stderr);
+                                print!("{stdout}");
                             } else {
-                              
                                 let path = Path::new(&dir);
                                 fs::write(&path, stdout);
                                 print!("{stderr}");
