@@ -285,6 +285,7 @@ pub mod solutions {
                     if let Some(op) = operator {
                         if op == "2>" {
                             print!("{stdout}");
+                            return false;
                         }
                     };
 
