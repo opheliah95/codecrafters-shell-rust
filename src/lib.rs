@@ -8,6 +8,7 @@ pub mod solutions {
     mod cmd;
     use regex::Regex;
     use shellwords;
+    use std::fs;
     use std::fs::File;
 
     pub fn type_impl(input: &str) {
@@ -277,39 +278,23 @@ pub mod solutions {
     }
 
     pub fn run_cmd_with_output(cmd: Vec<String>, dir: String, operator: Option<String>) -> bool {
-        use std::fs;
-
         match Command::new(&cmd[0]).args(&cmd[1..]).output() {
             Ok(output) => {
                 let path = Path::new(&dir);
                 if output.status.success() {
                     let mut stdout = String::from_utf8_lossy(&output.stdout).to_string();
                     if let Some(op) = operator {
-                        if op == "2>" {
+                        if ["2>", "2>>"].contains(&op.as_str()) {
                             print!("{stdout}");
                             stdout = "".to_string();
                         }
 
                         //append to existing files as a new line
-                        if [">>", "1>>"].contains(&op.as_str()) {
+                        if [">>", "1>>", "2>>"].contains(&op.as_str()) {
                             // if a file not exist then create it
-                            if !path.exists() {
-                                if let Some(parent) = path.parent() {
-                                    if let Err(e) = fs::create_dir_all(parent) {
-                                        eprintln!("Failed to create directory {:?}: {}", parent, e);
-                                        return false;
-                                    }
+                            create_path(path);
 
-                                    File::create(path).unwrap();
-                                }
-                            }
-                            let mut contents = fs::read_to_string(path)
-                                .expect("Should have been able to read the file");
-
-                            let formated_stdout = format!("{stdout}");
-                            contents.push_str(&formated_stdout);
-                            stdout = contents;
-                            //println!("the conten is{stdout}");
+                            stdout = format_file_content(path, &stdout);
                         }
                     };
 
@@ -327,8 +312,8 @@ pub mod solutions {
 
                     return true;
                 } else {
-                    let stderr = String::from_utf8_lossy(&output.stderr).to_string();
-                    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+                    let mut stderr = String::from_utf8_lossy(&output.stderr).to_string();
+                    let mut stdout = String::from_utf8_lossy(&output.stdout).to_string();
                     //force even bad output to write!!!
                     match operator {
                         Some(op) => {
@@ -336,6 +321,11 @@ pub mod solutions {
                                 let path = Path::new(&dir);
                                 fs::write(&path, stderr);
                                 print!("{stdout}");
+                            } else if op == "2>>" {
+                                let path = Path::new(&dir);
+                                create_path(path);
+                                let content = format_file_content(path, &stderr);
+                                fs::write(&path, content);
                             } else {
                                 let path = Path::new(&dir);
                                 fs::write(&path, stdout);
@@ -359,6 +349,27 @@ pub mod solutions {
                 let error_args_result = error_args.join("");
                 println!("{error_args_result}No such file or directory",);
                 return false;
+            }
+        }
+    }
+
+    fn format_file_content(path: &Path, output: &str) -> String {
+        let mut contents =
+            fs::read_to_string(path).expect("Should have been able to read the file");
+
+        contents.push_str(output);
+
+        contents
+    }
+
+    fn create_path(path: &Path) {
+        if !path.exists() {
+            if let Some(parent) = path.parent() {
+                if let Err(e) = fs::create_dir_all(parent) {
+                    eprintln!("Failed to create directory {:?}: {}", parent, e);
+                }
+
+                File::create(path).unwrap();
             }
         }
     }
