@@ -281,11 +281,11 @@ pub mod solutions {
         match Command::new(&cmd[0]).args(&cmd[1..]).output() {
             Ok(output) => {
                 if output.status.success() {
-                    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+                    let mut stdout = String::from_utf8_lossy(&output.stdout).to_string();
                     if let Some(op) = operator {
                         if op == "2>" {
                             print!("{stdout}");
-                            return false;
+                            stdout = "".to_string();
                         }
                     };
 
