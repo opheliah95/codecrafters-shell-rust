@@ -293,13 +293,15 @@ pub mod solutions {
                         //append to existing files as a new line
                         if [">>", "1>>"].contains(&op.as_str()) {
                             // if a file not exist then create it
-                            if let Some(parent) = path.parent() {
-                                if let Err(e) = fs::create_dir_all(parent) {
-                                    eprintln!("Failed to create directory {:?}: {}", parent, e);
-                                    return false;
-                                }
+                            if !path.exists() {
+                                if let Some(parent) = path.parent() {
+                                    if let Err(e) = fs::create_dir_all(parent) {
+                                        eprintln!("Failed to create directory {:?}: {}", parent, e);
+                                        return false;
+                                    }
 
-                                File::create(path).unwrap();
+                                    File::create(path).unwrap();
+                                }
                             }
                             let mut contents = fs::read_to_string(path)
                                 .expect("Should have been able to read the file");
