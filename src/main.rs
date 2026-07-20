@@ -102,7 +102,7 @@ fn main() -> Result<()> {
     //let mut rl= Editor::new()?;
     rl.bind_sequence(
         KeyEvent(KeyCode::Tab, Modifiers::NONE),
-        EventHandler::Simple(Cmd::CompleteHint),
+        EventHandler::Simple(Cmd::Complete),
     );
     rl.set_helper(Some(h));
     // let stdin = io::stdin();
