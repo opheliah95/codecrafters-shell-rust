@@ -262,7 +262,7 @@ pub mod solutions {
         }
     }
 
-    pub fn run_cmd(args: Vec<String>) -> bool {
+    pub fn run_cmd(args: &[String]) -> bool {
         let output = Command::new(&args[0]).args(&args[1..]).output();
 
         match output {

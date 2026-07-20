@@ -12,6 +12,9 @@ thiserror = "1.0.38"                             # error handling
 is_executable = "1.0"
 regex = "1.13.0"
 shellwords = "1.1.0"
+proc-macro2="1.0.107"
+rustyline = {version="18.0.0", features=[ "with-file-history", "derive", "custom-bindings"]}
+crossterm = "0.29.0"
 
 [lib]
 path="src/lib.rs"
