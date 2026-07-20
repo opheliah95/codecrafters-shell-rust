@@ -3,12 +3,14 @@ use codecrafters_shell::solutions::{
     cd_path, check_valid_path, get_pwd, run_cmd, run_cmd_with_output,
 };
 
+use rustyline::highlight::MatchingBracketHighlighter;
 use rustyline::hint::{Hint, Hinter};
 use rustyline::history::FileHistory;
-use rustyline::highlight::MatchingBracketHighlighter;
 use rustyline::validate::MatchingBracketValidator;
-use rustyline::{Completer, Context, Editor, Helper, Highlighter, Result, Validator, KeyCode, KeyEvent,
-    Modifiers, EventHandler, Cmd, DefaultEditor};
+use rustyline::{
+    Cmd, Completer, Context, DefaultEditor, Editor, EventHandler, Helper, Highlighter, KeyCode,
+    KeyEvent, Modifiers, Result, Validator,
+};
 
 use shellwords;
 use std::collections::HashSet;
@@ -70,6 +72,9 @@ impl Hinter for DIYHinter {
                 // expect hint after word complete, like redis cli, add condition:
                 // line.ends_with(" ")
                 if hint.display.starts_with(line) {
+                     if line.len() < 3 { 
+                    return None; 
+                }
                     Some(hint.suffix(pos))
                 } else {
                     None
@@ -95,7 +100,7 @@ fn main() -> Result<()> {
     let mut rl = Editor::new()?;
 
     //let mut rl= Editor::new()?;
-     rl.bind_sequence(
+    rl.bind_sequence(
         KeyEvent(KeyCode::Tab, Modifiers::NONE),
         EventHandler::Simple(Cmd::CompleteHint),
     );
