@@ -1,6 +1,6 @@
 #[allow(unused_imports)]
 use codecrafters_shell::solutions::{
-    cd_path, check_valid_path, get_pwd, run_cmd, run_cmd_with_output,
+    cd_path, check_valid_path, get_pwd, run_cmd, run_cmd_with_output,find_exe_path_partial
 };
 
 use rustyline::completion::Completer;
@@ -46,11 +46,14 @@ impl Completer for MyHelper {
             return Ok((start, Vec::new()));
         }
 
+        let mut searches: Vec<String> = Vec::new();
+        searches = find_exe_path_partial(partial).unwrap();
+        searches.push("exit ".to_string());
         // Find matching hints
-        let mut matches: Vec<String> = self.hints
+        let matches: Vec<String> = searches
             .iter()
-            .filter(|hint| hint.display.starts_with(partial))
-            .map(|hint| hint.display.clone())
+            .filter(|hint| hint.starts_with(partial))
+            .map(|s| format!("{} ", s))
             .collect();
 
         Ok((start, matches))

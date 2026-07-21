@@ -2,10 +2,11 @@ pub mod solutions {
     use core::error;
     use is_executable::IsExecutable;
     use std::env;
-    use std::io::stdout;
+    use std::io::{Error, ErrorKind, stdout};
     use std::path::{Path, PathBuf};
     use std::process::Command;
     mod cmd;
+    use glob::glob;
     use regex::Regex;
     use shellwords;
     use std::fs;
@@ -73,6 +74,36 @@ pub mod solutions {
         if !found {
             println!("{first_arg}: not found");
         }
+    }
+
+    pub fn find_exe_path_partial(prefix: &str) -> Result<Vec<String>, Error> {
+        let mut results = Vec::new();
+
+        if let Some(all_path) = get_env_path() {
+            for path in all_path {
+                let search = format!("{path}/{prefix}*");
+                for exe in glob(search.as_str()).unwrap() {
+                    match exe {
+                        Ok(p) => {
+                            let p_to_string = p.file_name().and_then(|s| s.to_str());
+                            let string_spilt: Vec<&str> = p_to_string.unwrap().split("/").collect();
+                            let last_part = string_spilt.last().unwrap().to_string();
+                            //println!("last part is {last_part}");
+                            results.push(last_part);
+
+                        }
+                        Err(e) => println!("Error: {:?}", e),
+                    }
+                }
+            }
+        } else {
+            return Err(Error::new(
+                ErrorKind::NotFound,
+                "Environment path not found",
+            ));
+        }
+
+        Ok(results)
     }
 
     pub fn run_external_program(cmd: &str) -> bool {
