@@ -122,8 +122,8 @@ impl Hinter for MyHelper {
 
 fn diy_hints() -> HashSet<CommandHint> {
     let mut set = HashSet::new();
-    set.insert(CommandHint::new("echo", "echo"));
-    set.insert(CommandHint::new("exit", "exit"));
+    set.insert(CommandHint::new("echo ", "echo "));
+    set.insert(CommandHint::new("exit ", "exit "));
     set.insert(CommandHint::new("set key value", "set "));
     set.insert(CommandHint::new("hget key field", "hget "));
     set.insert(CommandHint::new("hset key field value", "hset "));
