@@ -3,24 +3,51 @@ use codecrafters_shell::solutions::{
     cd_path, check_valid_path, get_pwd, run_cmd, run_cmd_with_output,
 };
 
+use rustyline::completion::Completer;
 use rustyline::highlight::MatchingBracketHighlighter;
-use rustyline::hint::{Hint, Hinter};
+use rustyline::hint::{Hint, Hinter, HistoryHinter};
 use rustyline::history::FileHistory;
 use rustyline::validate::MatchingBracketValidator;
 use rustyline::{
-    Cmd, Completer, Context, DefaultEditor, Editor, EventHandler, Helper, Highlighter, KeyCode,
-    KeyEvent, Modifiers, Result, Validator,
+    Cmd, Completer, ConditionalEventHandler, Context, DefaultEditor, Editor, Event, EventContext,
+    EventHandler, Helper, Highlighter, KeyCode, KeyEvent, Modifiers, RepeatCount, Result,
+    Validator,
 };
 
 use shellwords;
 use std::collections::HashSet;
 
 #[derive(Completer, Helper, Validator, Highlighter)]
-struct DIYHinter {
+struct MyHinter {
     // It's simple example of rustyline, for more efficient, please use ** radix trie **
     hints: HashSet<CommandHint>,
 }
 
+#[derive(Helper, Validator, Highlighter)]
+struct MyHelper {
+    hints: HashSet<CommandHint>,
+}
+impl Completer for MyHelper {
+    type Candidate = &'static str;
+    // TODO: let the implementers choose/find word boundaries ??? => Lexer
+
+    /// Takes the currently edited `line` with the cursor `pos`ition and
+    /// returns the start position and the completion candidates for the
+    /// partial word to be completed.
+    ///
+    /// `("ls /usr/loc", 11)` => `Ok((3, vec!["/usr/local/"]))`
+    fn complete(
+        &self, // FIXME should be `&mut self`
+        line: &str,
+        pos: usize,
+        ctx: &Context<'_>,
+    ) -> Result<(usize, Vec<Self::Candidate>)> {
+        let _ = (line, pos, ctx);
+        Ok((0, Vec::with_capacity(0)))
+    }
+}
+
+//create hinter
 #[derive(Hash, Debug, PartialEq, Eq)]
 struct CommandHint {
     display: String,
@@ -29,7 +56,7 @@ struct CommandHint {
 
 impl Hint for CommandHint {
     fn display(&self) -> &str {
-        &self.display
+         &self.display
     }
 
     fn completion(&self) -> Option<&str> {
@@ -43,7 +70,7 @@ impl Hint for CommandHint {
 
 impl CommandHint {
     fn new(text: &str, complete_up_to: &str) -> Self {
-        //assert!(text.starts_with(complete_up_to));
+        assert!(text.starts_with(complete_up_to));
         Self {
             display: text.into(),
             complete_up_to: complete_up_to.len(),
@@ -58,7 +85,30 @@ impl CommandHint {
     }
 }
 
-impl Hinter for DIYHinter {
+impl Hinter for MyHelper {
+    type Hint = CommandHint;
+
+    fn hint(&self, line: &str, pos: usize, _ctx: &Context<'_>) -> Option<CommandHint> {
+        if line.is_empty() || pos < line.len() {
+            return None;
+        }
+
+        self.hints
+            .iter()
+            .filter_map(|hint| {
+                // expect hint after word complete, like redis cli, add condition:
+                // line.ends_with(" ")
+                if hint.display.starts_with(line) && line.len() >=3 {
+                    Some(hint.suffix(pos))
+                } else {
+                    None
+                }
+            })
+            .next()
+    }
+}
+
+impl Hinter for MyHinter {
     type Hint = CommandHint;
 
     fn hint(&self, line: &str, pos: usize, _ctx: &Context<'_>) -> Option<CommandHint> {
@@ -72,9 +122,6 @@ impl Hinter for DIYHinter {
                 // expect hint after word complete, like redis cli, add condition:
                 // line.ends_with(" ")
                 if hint.display.starts_with(line) {
-                     if line.len() < 3 { 
-                    return None; 
-                }
                     Some(hint.suffix(pos))
                 } else {
                     None
@@ -83,7 +130,6 @@ impl Hinter for DIYHinter {
             .next()
     }
 }
-
 fn diy_hints() -> HashSet<CommandHint> {
     let mut set = HashSet::new();
     set.insert(CommandHint::new("echo", "echo"));
@@ -94,35 +140,42 @@ fn diy_hints() -> HashSet<CommandHint> {
     set
 }
 
+#[derive(Clone)]
+struct TabHandler;
+impl ConditionalEventHandler for TabHandler {
+    fn handle(&self, evt: &Event, n: RepeatCount, _: bool, ctx: &EventContext) -> Option<Cmd> {
+        if let Some(k) = evt.get(0) {
+            if let Some(txt) = ctx.hint_text() {
+                //println!("enter tab");
+                // println!("tab activated, text is {txt}");
+                if txt.len() == 1{
+                    return Some(Cmd::Insert(1, txt.to_string()))
+                }
+                    
+            } else {
+                //println!("error handling event");
+                return Some(Cmd::Noop);
+            }
+        }
+        //println!("error receiving input");
+        None
+    }
+}
+
 fn main() -> Result<()> {
     //TODO: Uncomment the code below to pass the first stage
-    let h = DIYHinter { hints: diy_hints() };
-    let mut rl = Editor::new()?;
+    let h = MyHelper { hints: diy_hints() };
+    let mut editor: Editor<MyHelper, _>  = Editor::new()?;
+     editor.set_helper(Some(h));
 
     //let mut rl= Editor::new()?;
-    rl.bind_sequence(
-        KeyEvent(KeyCode::Tab, Modifiers::NONE),
-        EventHandler::Simple(Cmd::Complete),
+    editor.bind_sequence(
+        KeyEvent::from('\t'),
+        EventHandler::Conditional(Box::new(TabHandler)),
     );
-    rl.set_helper(Some(h));
-    // let stdin = io::stdin();
-    // let mut buffer = [0u8; 1];
 
-    // #[cfg(feature = "with-file-history")]
-    // if rl.load_history("history.txt").is_err() {
-    //     println!("No previous history.");
-    // }
     loop {
-        // let mut handle = stdin.lock();
-        // let single_read = handle.read(&mut buffer);
-        // if single_read.as_ref().unwrap() == &1 {
-        //     let b = buffer[0];
-        //     if let Ok(s) = std::str::from_utf8(&buffer) {
-        //         print!("{s}");
-        //     } else {
-        //         print!("\\x{:02x}", b);
-        //     }
-        let readline = rl.readline("$ ");
+        let readline = editor.readline("$ ");
         match readline {
             Ok(line) => {
                 let mut input = String::new();
