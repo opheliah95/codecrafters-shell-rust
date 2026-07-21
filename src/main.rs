@@ -48,7 +48,7 @@ impl Completer for MyHelper {
 
         let mut searches: Vec<String> = Vec::new();
         searches = find_exe_path_partial(partial).unwrap();
-        searches.push("exit ".to_string());
+        searches.push("exit".to_string());
         // Find matching hints
         let matches: Vec<String> = searches
             .iter()
