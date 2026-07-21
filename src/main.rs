@@ -100,6 +100,7 @@ impl Hinter for MyHelper {
                 // line.ends_with(" ")
                 if hint.display.starts_with(line) && line.len() >=3 {
                     Some(hint.suffix(pos))
+                    
                 } else {
                     None
                 }
@@ -113,6 +114,11 @@ impl Hinter for MyHinter {
 
     fn hint(&self, line: &str, pos: usize, _ctx: &Context<'_>) -> Option<CommandHint> {
         if line.is_empty() || pos < line.len() {
+            return None;
+        }
+
+        
+        if self.hints.iter().any(|h| h.display == line) {
             return None;
         }
 
