@@ -17,18 +17,13 @@ use rustyline::{
 use shellwords;
 use std::collections::HashSet;
 
-#[derive(Completer, Helper, Validator, Highlighter)]
-struct MyHinter {
-    // It's simple example of rustyline, for more efficient, please use ** radix trie **
-    hints: HashSet<CommandHint>,
-}
 
 #[derive(Helper, Validator, Highlighter)]
 struct MyHelper {
     hints: HashSet<CommandHint>,
 }
 impl Completer for MyHelper {
-    type Candidate = &'static str;
+    type Candidate = String;
     // TODO: let the implementers choose/find word boundaries ??? => Lexer
 
     /// Takes the currently edited `line` with the cursor `pos`ition and
@@ -42,8 +37,23 @@ impl Completer for MyHelper {
         pos: usize,
         ctx: &Context<'_>,
     ) -> Result<(usize, Vec<Self::Candidate>)> {
-        let _ = (line, pos, ctx);
-        Ok((0, Vec::with_capacity(0)))
+        
+
+        // Find the word being completed (simple split by space)
+        let start = line.rfind(' ').map(|i| i + 1).unwrap_or(0);
+        let partial = &line[start..pos]; // The part the user typed
+        if partial.is_empty() {
+            return Ok((start, Vec::new()));
+        }
+
+        // Find matching hints
+        let mut matches: Vec<String> = self.hints
+            .iter()
+            .filter(|hint| hint.display.starts_with(partial))
+            .map(|hint| hint.display.clone())
+            .collect();
+
+        Ok((start, matches))
     }
 }
 
@@ -89,53 +99,27 @@ impl Hinter for MyHelper {
     type Hint = CommandHint;
 
     fn hint(&self, line: &str, pos: usize, _ctx: &Context<'_>) -> Option<CommandHint> {
-        if line.is_empty() || pos < line.len() {
-            return None;
-        }
+        None
+    //     if line.is_empty() || pos < line.len() {
+    //         return None;
+    //     }
 
-        self.hints
-            .iter()
-            .filter_map(|hint| {
-                // expect hint after word complete, like redis cli, add condition:
-                // line.ends_with(" ")
-                if hint.display.starts_with(line) && line.len() >=3 {
-                    Some(hint.suffix(pos))
+    //     self.hints
+    //         .iter()
+    //         .filter_map(|hint| {
+    //             // expect hint after word complete, like redis cli, add condition:
+    //             // line.ends_with(" ")
+    //             if hint.display.starts_with(line) && line.len() >=3 {
+    //                 Some(hint.suffix(pos))
                     
-                } else {
-                    None
-                }
-            })
-            .next()
-    }
+    //             } else {
+    //                 None
+    //             }
+    //         })
+    //         .next()
+     }
 }
 
-impl Hinter for MyHinter {
-    type Hint = CommandHint;
-
-    fn hint(&self, line: &str, pos: usize, _ctx: &Context<'_>) -> Option<CommandHint> {
-        if line.is_empty() || pos < line.len() {
-            return None;
-        }
-
-        
-        if self.hints.iter().any(|h| h.display == line) {
-            return None;
-        }
-
-        self.hints
-            .iter()
-            .filter_map(|hint| {
-                // expect hint after word complete, like redis cli, add condition:
-                // line.ends_with(" ")
-                if hint.display.starts_with(line) {
-                    Some(hint.suffix(pos))
-                } else {
-                    None
-                }
-            })
-            .next()
-    }
-}
 fn diy_hints() -> HashSet<CommandHint> {
     let mut set = HashSet::new();
     set.insert(CommandHint::new("echo", "echo"));
@@ -174,11 +158,11 @@ fn main() -> Result<()> {
     let mut editor: Editor<MyHelper, _>  = Editor::new()?;
      editor.set_helper(Some(h));
 
-    //let mut rl= Editor::new()?;
-    editor.bind_sequence(
-        KeyEvent::from('\t'),
-        EventHandler::Conditional(Box::new(TabHandler)),
-    );
+    // //let mut rl= Editor::new()?;
+    // editor.bind_sequence(
+    //     KeyEvent::from('\t'),
+    //     EventHandler::Conditional(Box::new(TabHandler)),
+    // );
 
     loop {
         let readline = editor.readline("$ ");
