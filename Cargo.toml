@@ -16,7 +16,6 @@ proc-macro2="1.0.107"
 rustyline = {version="18.0.0", features=[ "with-file-history", "derive", "custom-bindings"]}
 crossterm = "0.29.0"
 glob = "0.3.3"
-line-buffer = "1.0.0"
 
 [lib]
 path="src/lib.rs"
