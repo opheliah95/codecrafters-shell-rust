@@ -59,6 +59,7 @@ dependencies = [
  "crossterm",
  "glob",
  "is_executable",
+ "line-buffer",
  "proc-macro2",
  "regex",
  "rustyline",
@@ -190,6 +191,15 @@ name = "libc"
 version = "0.2.186"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68ab91017fe16c622486840e4c83c9a37afeff978bd239b5293d61ece587de66"
+
+[[package]]
+name = "line-buffer"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "664aa97ce9df868dcb854cbde778c3da9f608e4889e2f1df5db19ff978353b26"
+dependencies = [
+ "unicode-segmentation",
+]
 
 [[package]]
 name = "linux-raw-sys"

@@ -1,9 +1,9 @@
 #[allow(unused_imports)]
 use codecrafters_shell::solutions::{
-    cd_path, check_valid_path, get_pwd, run_cmd, run_cmd_with_output,find_exe_path_partial
+    cd_path, check_valid_path, find_exe_path_partial, get_pwd, run_cmd, run_cmd_with_output,
 };
 
-use rustyline::completion::Completer;
+use rustyline::completion::{Candidate, Completer};
 use rustyline::highlight::MatchingBracketHighlighter;
 use rustyline::hint::{Hint, Hinter, HistoryHinter};
 use rustyline::history::FileHistory;
@@ -11,17 +11,20 @@ use rustyline::validate::MatchingBracketValidator;
 use rustyline::{
     Cmd, Completer, ConditionalEventHandler, Context, DefaultEditor, Editor, Event, EventContext,
     EventHandler, Helper, Highlighter, KeyCode, KeyEvent, Modifiers, RepeatCount, Result,
-    Validator,
+    Validator,line_buffer::LineBuffer, Changeset
 };
 
 use shellwords;
+use std::cell::Cell;
 use std::collections::HashSet;
 
 
 #[derive(Helper, Validator, Highlighter)]
 struct MyHelper {
     hints: HashSet<CommandHint>,
+    tab_pressed: Cell<u8>,
 }
+
 impl Completer for MyHelper {
     type Candidate = String;
     // TODO: let the implementers choose/find word boundaries ??? => Lexer
@@ -37,8 +40,6 @@ impl Completer for MyHelper {
         pos: usize,
         ctx: &Context<'_>,
     ) -> Result<(usize, Vec<Self::Candidate>)> {
-        
-
         // Find the word being completed (simple split by space)
         let start = line.rfind(' ').map(|i| i + 1).unwrap_or(0);
         let partial = &line[start..pos]; // The part the user typed
@@ -47,16 +48,36 @@ impl Completer for MyHelper {
         }
 
         let mut searches: Vec<String> = Vec::new();
+        let mut matches: Vec<String> = Vec::new();
         searches = find_exe_path_partial(partial).unwrap();
         searches.push("exit".to_string());
-        // Find matching hints
-        let matches: Vec<String> = searches
-            .iter()
-            .filter(|hint| hint.starts_with(partial))
-            .map(|s| format!("{} ", s))
-            .collect();
 
-        Ok((start, matches))
+        // only return match if more than one tab is pressed
+        if self.tab_pressed.get() == 0 {
+            self.tab_pressed.set(1);
+            print!("\x07");
+            return Ok((start, Vec::new()));
+        } else {
+            matches = searches
+                .iter()
+                .filter(|hint| hint.starts_with(partial))
+                .map(|s| format!("{} ", s))
+                .collect();
+            let mut seen = HashSet::new();
+            let unique_matches: Vec<String> = matches.into_iter()
+                    .filter(|s| seen.insert(s.clone())).collect();
+             let match_str = unique_matches.join(" ");
+             println!("\n{match_str}");
+            self.tab_pressed.set(0);
+
+            return Ok((start, unique_matches));
+        }
+        // Find matching hints
+    }
+
+    fn update(&self, line: &mut LineBuffer, start: usize, elected: &str, cl: &mut Changeset) {
+        //let end = line.pos();
+        //line.replace(start..end, elected, cl);
     }
 }
 
@@ -69,7 +90,7 @@ struct CommandHint {
 
 impl Hint for CommandHint {
     fn display(&self) -> &str {
-         &self.display
+        &self.display
     }
 
     fn completion(&self) -> Option<&str> {
@@ -103,24 +124,24 @@ impl Hinter for MyHelper {
 
     fn hint(&self, line: &str, pos: usize, _ctx: &Context<'_>) -> Option<CommandHint> {
         None
-    //     if line.is_empty() || pos < line.len() {
-    //         return None;
-    //     }
+        //     if line.is_empty() || pos < line.len() {
+        //         return None;
+        //     }
 
-    //     self.hints
-    //         .iter()
-    //         .filter_map(|hint| {
-    //             // expect hint after word complete, like redis cli, add condition:
-    //             // line.ends_with(" ")
-    //             if hint.display.starts_with(line) && line.len() >=3 {
-    //                 Some(hint.suffix(pos))
-                    
-    //             } else {
-    //                 None
-    //             }
-    //         })
-    //         .next()
-     }
+        //     self.hints
+        //         .iter()
+        //         .filter_map(|hint| {
+        //             // expect hint after word complete, like redis cli, add condition:
+        //             // line.ends_with(" ")
+        //             if hint.display.starts_with(line) && line.len() >=3 {
+        //                 Some(hint.suffix(pos))
+
+        //             } else {
+        //                 None
+        //             }
+        //         })
+        //         .next()
+    }
 }
 
 fn diy_hints() -> HashSet<CommandHint> {
@@ -141,10 +162,9 @@ impl ConditionalEventHandler for TabHandler {
             if let Some(txt) = ctx.hint_text() {
                 //println!("enter tab");
                 // println!("tab activated, text is {txt}");
-                if txt.len() == 1{
-                    return Some(Cmd::Insert(1, txt.to_string()))
+                if txt.len() == 1 {
+                    return Some(Cmd::Insert(1, txt.to_string()));
                 }
-                    
             } else {
                 //println!("error handling event");
                 return Some(Cmd::Noop);
@@ -157,9 +177,12 @@ impl ConditionalEventHandler for TabHandler {
 
 fn main() -> Result<()> {
     //TODO: Uncomment the code below to pass the first stage
-    let h = MyHelper { hints: diy_hints() };
-    let mut editor: Editor<MyHelper, _>  = Editor::new()?;
-     editor.set_helper(Some(h));
+    let h = MyHelper {
+        hints: diy_hints(),
+        tab_pressed: Cell::new(0),
+    };
+    let mut editor: Editor<MyHelper, _> = Editor::new()?;
+    editor.set_helper(Some(h));
 
     // //let mut rl= Editor::new()?;
     // editor.bind_sequence(
