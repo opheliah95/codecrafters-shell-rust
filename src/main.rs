@@ -27,74 +27,85 @@ struct MyHelper {
 
 impl Completer for MyHelper {
     type Candidate = String;
+    // TODO: let the implementers choose/find word boundaries ??? => Lexer
 
+    /// Takes the currently edited `line` with the cursor `pos`ition and
+    /// returns the start position and the completion candidates for the
+    /// partial word to be completed.
+    ///
+    /// `("ls /usr/loc", 11)` => `Ok((3, vec!["/usr/local/"]))`
     fn complete(
-        &self,
+        &self, // FIXME should be `&mut self`
         line: &str,
         pos: usize,
         ctx: &Context<'_>,
     ) -> Result<(usize, Vec<Self::Candidate>)> {
+        // Find the word being completed (simple split by space)
         let start = line.rfind(' ').map(|i| i + 1).unwrap_or(0);
-        let partial = &line[start..pos];
-
+        let partial = &line[start..pos]; // The part the user typed
         if partial.is_empty() {
             return Ok((start, Vec::new()));
         }
 
-        // Get matches
-        let mut searches = find_exe_path_partial(partial).unwrap();
+        let mut searches: Vec<String> = Vec::new();
+        let mut matches: Vec<String> = Vec::new();
+        searches = find_exe_path_partial(partial).unwrap();
         searches.push("exit".to_string());
 
-        let mut filtered: Vec<String> = searches
-            .into_iter()
-            .filter(|m| m.starts_with(partial))
-            .collect();
-
-        if filtered.is_empty() {
+        // only return match if more than one tab is pressed
+        if self.tab_pressed.get() == 0 {
+            self.tab_pressed.set(1);
+            print!("\x07");
             return Ok((start, Vec::new()));
-        }
-
-        // Sort alphabetically
-        filtered.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
-
-        // Remove duplicates
-        let mut seen = HashSet::new();
-        filtered.retain(|s| seen.insert(s.clone()));
-
-        if filtered.len() == 1 {
-            // SINGLE MATCH: Auto-complete immediately on first TAB
-            // Add a trailing space as expected by the test
-            let candidate = format!("{} ", filtered[0]);
-            // Reset tab counter so next tab starts fresh if needed
-            self.tab_pressed.set(0);
-            // Return the single candidate to let rustyline fill the line
-            Ok((start, vec![candidate]))
         } else {
-            // MULTIPLE MATCHES
-            if self.tab_pressed.get() == 0 {
-                // First TAB: Ring bell, do NOT fill
-                self.tab_pressed.set(1);
-                print!("\x07");
-                std::io::stdout().flush().unwrap();
-                Ok((start, Vec::new()))
-            } else {
-                // Second TAB: List matches
+            matches = searches
+                .iter()
+                .filter(|hint| hint.starts_with(partial))
+                .map(|s| format!("{} ", s))
+                .collect();
+
+            if matches.is_empty() {
+                return Ok((start, Vec::new()));
+            }
+
+            if matches.len() == 1 {
+                let match_str = matches.join(" ");
+                println!("\n{match_str}");
                 self.tab_pressed.set(0);
-                
-                // Print list
-                //println!();
-                println!("{}", filtered.join("  "));
-                
-                // Re-print prompt and original text
-                //println!();
+                return Ok((start, matches));
+            }
+            let mut seen = HashSet::new();
+            let mut unique_matches: Vec<String> = matches.clone()
+                .into_iter()
+                .filter(|s| seen.insert(s.clone()))
+                .collect();
+            unique_matches.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+            println!("unique match {:?}", unique_matches);
+            if unique_matches.len() > 1 {
+                let match_str = unique_matches.join(" ");
+                println!("\n{match_str}");
+                self.tab_pressed.set(0);
+
                 println!("$ {}", partial);
-                std::io::stdout().flush().unwrap();
-                
-                // Return empty to prevent auto-fill
-                Ok((start, Vec::new()))
+                stdout().flush().unwrap();
+
+                // Ok((start, Vec::new()))
+
+                return Ok((start, unique_matches));
+            } else {
+                let match_str = matches.join(" ");
+                println!("\n{match_str}");
+                self.tab_pressed.set(0);
+                return Ok((start, matches));
             }
         }
+        // Find matching hints
     }
+
+    // fn update(&self, line: &mut LineBuffer, start: usize, elected: &str, cl: &mut Changeset) {
+    //     //let end = line.pos();
+    //     //line.replace(start..end, elected, cl);
+    // }
 }
 
 //create hinter
