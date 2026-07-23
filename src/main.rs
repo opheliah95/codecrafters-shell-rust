@@ -81,7 +81,7 @@ impl Completer for MyHelper {
 
                 return Ok((start, unique_matches));
             } else {
-                let match_str = unique_matches.join(" ");
+                let match_str = matches.join(" ");
                 println!("\n{match_str}");
                 self.tab_pressed.set(0);
                 return Ok((start, matches));
