@@ -9,16 +9,15 @@ use rustyline::hint::{Hint, Hinter, HistoryHinter};
 use rustyline::history::FileHistory;
 use rustyline::validate::MatchingBracketValidator;
 use rustyline::{
-    Cmd, Completer, ConditionalEventHandler, Context, DefaultEditor, Editor, Event, EventContext,
-    EventHandler, Helper, Highlighter, KeyCode, KeyEvent, Modifiers, RepeatCount, Result,
-    Validator,line_buffer::LineBuffer, Changeset
+    Changeset, Cmd, Completer, ConditionalEventHandler, Context, DefaultEditor, Editor, Event,
+    EventContext, EventHandler, Helper, Highlighter, KeyCode, KeyEvent, Modifiers, RepeatCount,
+    Result, Validator, line_buffer::LineBuffer,
 };
 
 use shellwords;
 use std::cell::Cell;
 use std::collections::HashSet;
-use std::io::{stdout, Write};
-
+use std::io::{Write, stdout};
 
 #[derive(Helper, Validator, Highlighter)]
 struct MyHelper {
@@ -64,20 +63,29 @@ impl Completer for MyHelper {
                 .filter(|hint| hint.starts_with(partial))
                 .map(|s| format!("{} ", s))
                 .collect();
-            let mut seen = HashSet::new();
-            let mut unique_matches: Vec<String> = matches.into_iter()
-                    .filter(|s| seen.insert(s.clone())).collect();
-            unique_matches.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
-             let match_str = unique_matches.join(" ");
-             println!("\n{match_str}");
-            self.tab_pressed.set(0);
+            if matches.len() > 1 {
+                let mut seen = HashSet::new();
+                let mut unique_matches: Vec<String> = matches
+                    .into_iter()
+                    .filter(|s| seen.insert(s.clone()))
+                    .collect();
+                unique_matches.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+                let match_str = unique_matches.join(" ");
+                println!("\n{match_str}");
+                self.tab_pressed.set(0);
 
-            println!("$ {}", partial);
-            stdout().flush().unwrap();
-            
-           // Ok((start, Vec::new()))
+                println!("$ {}", partial);
+                stdout().flush().unwrap();
 
-            return Ok((start, unique_matches));
+                // Ok((start, Vec::new()))
+
+                return Ok((start, unique_matches));
+            } else {
+                let match_str = unique_matches.join(" ");
+                println!("\n{match_str}");
+                self.tab_pressed.set(0);
+                return Ok((start, matches));
+            }
         }
         // Find matching hints
     }
