@@ -64,8 +64,9 @@ impl Completer for MyHelper {
                 .map(|s| format!("{} ", s))
                 .collect();
             let mut seen = HashSet::new();
-            let unique_matches: Vec<String> = matches.into_iter()
+            let mut unique_matches: Vec<String> = matches.into_iter()
                     .filter(|s| seen.insert(s.clone())).collect();
+            unique_matches.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
              let match_str = unique_matches.join(" ");
              println!("\n{match_str}");
             self.tab_pressed.set(0);
