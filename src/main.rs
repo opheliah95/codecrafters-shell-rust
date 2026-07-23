@@ -73,7 +73,7 @@ impl Completer for MyHelper {
 
         // only return match if more than one tab is pressed
         if self.tab_pressed.get() == 0 {
-            println!("matches: {:?}", matches);
+            //println!("matches: {:?}", matches);
             if unique_matches.len() == 1 {
                 self.tab_pressed.set(0);
                 return Ok((start, matches));
