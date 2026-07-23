@@ -72,11 +72,9 @@ impl Completer for MyHelper {
              println!("\n{match_str}");
             self.tab_pressed.set(0);
 
-            println!(); // Newline to move to the next line for the prompt
-            print!("$ {}", partial);
+            println!("$ {}", partial);
             stdout().flush().unwrap();
             
-            // CRITICAL: Return empty vector to prevent rustyline from auto-filling
             Ok((start, Vec::new()))
 
             //return Ok((start, unique_matches));
