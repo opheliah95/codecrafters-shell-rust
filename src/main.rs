@@ -16,6 +16,7 @@ use rustyline::{
 use shellwords;
 use std::cell::Cell;
 use std::collections::HashSet;
+use std::fmt::format;
 use std::io::{Write, stdout};
 
 #[derive(Helper, Validator, Highlighter)]
@@ -56,7 +57,7 @@ impl Completer for MyHelper {
             .filter(|hint| hint.starts_with(partial))
             .map(|s| format!("{}", s))
             .collect();
-
+        
         if matches.is_empty() {
             return Ok((start, Vec::new()));
         }
@@ -70,7 +71,16 @@ impl Completer for MyHelper {
         unique_matches.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
         //println!("unique match {:?}", unique_matches);
         
-        return Ok((start, unique_matches));
+
+        if unique_matches.len() > 1 {
+            return Ok((start, unique_matches));
+        } else {
+            let last_match = unique_matches.last().clone().unwrap();
+            let last_formatted = format!("{} ", last_match);
+            return Ok((start, vec![last_formatted]));
+        }
+            
+
         
 
     }
