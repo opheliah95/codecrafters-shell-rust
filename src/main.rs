@@ -51,17 +51,30 @@ impl Completer for MyHelper {
         let mut matches: Vec<String> = Vec::new();
         searches = find_exe_path_partial(partial).unwrap();
         searches.push("exit".to_string());
-        
-        matches = searches
-                .iter()
-                .filter(|hint| hint.starts_with(partial))
-                .map(|s| format!("{} ", s))
-                .collect();
 
+        matches = searches
+            .iter()
+            .filter(|hint| hint.starts_with(partial))
+            .map(|s| format!("{} ", s))
+            .collect();
+
+        if matches.is_empty() {
+            return Ok((start, Vec::new()));
+        }
+
+        let mut seen = HashSet::new();
+        let mut unique_matches: Vec<String> = matches
+            .clone()
+            .into_iter()
+            .filter(|s| seen.insert(s.clone()))
+            .collect();
+        unique_matches.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+        //println!("unique match {:?}", unique_matches);
 
         // only return match if more than one tab is pressed
         if self.tab_pressed.get() == 0 {
-            if matches.len() == 1 {
+            println!("matches: {:?}", matches);
+            if unique_matches.len() == 1 {
                 self.tab_pressed.set(0);
                 return Ok((start, matches));
             }
@@ -69,36 +82,16 @@ impl Completer for MyHelper {
             print!("\x07");
             return Ok((start, Vec::new()));
         } else {
-           
-            if matches.is_empty() {
-                return Ok((start, Vec::new()));
-            }
+            let match_str = unique_matches.join(" ");
+            println!("\n{match_str}");
+            self.tab_pressed.set(0);
 
-            
-            let mut seen = HashSet::new();
-            let mut unique_matches: Vec<String> = matches.clone()
-                .into_iter()
-                .filter(|s| seen.insert(s.clone()))
-                .collect();
-            unique_matches.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
-            //println!("unique match {:?}", unique_matches);
-            if unique_matches.len() > 1 {
-                let match_str = unique_matches.join(" ");
-                println!("\n{match_str}");
-                self.tab_pressed.set(0);
+            println!("$ {}", partial);
+            stdout().flush().unwrap();
 
-                println!("$ {}", partial);
-                stdout().flush().unwrap();
+            // Ok((start, Vec::new()))
 
-                // Ok((start, Vec::new()))
-
-                return Ok((start, unique_matches));
-            } else {
-                let match_str = matches.join(" ");
-                println!("\n{match_str}");
-                self.tab_pressed.set(0);
-                return Ok((start, matches));
-            }
+            return Ok((start, unique_matches));
         }
         // Find matching hints
     }
