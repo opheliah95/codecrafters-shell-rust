@@ -64,7 +64,7 @@ impl Completer for MyHelper {
                 .map(|s| format!("{} ", s))
                 .collect();
             let mut seen = HashSet::new();
-            let mut unique_matches: Vec<String> = matches
+            let mut unique_matches: Vec<String> = matches.clone()
                 .into_iter()
                 .filter(|s| seen.insert(s.clone()))
                 .collect();
