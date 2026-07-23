@@ -76,10 +76,10 @@ impl Completer for MyHelper {
         // Find matching hints
     }
 
-    // fn update(&self, line: &mut LineBuffer, start: usize, elected: &str, cl: &mut Changeset) {
-    //     //let end = line.pos();
-    //     //line.replace(start..end, elected, cl);
-    // }
+    fn update(&self, line: &mut LineBuffer, start: usize, elected: &str, cl: &mut Changeset) {
+        //let end = line.pos();
+        //line.replace(start..end, elected, cl);
+    }
 }
 
 //create hinter
