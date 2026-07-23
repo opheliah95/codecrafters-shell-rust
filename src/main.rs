@@ -51,29 +51,30 @@ impl Completer for MyHelper {
         let mut matches: Vec<String> = Vec::new();
         searches = find_exe_path_partial(partial).unwrap();
         searches.push("exit".to_string());
-
-        // only return match if more than one tab is pressed
-        if self.tab_pressed.get() == 0 {
-            self.tab_pressed.set(1);
-            print!("\x07");
-            return Ok((start, Vec::new()));
-        } else {
-            matches = searches
+        
+        matches = searches
                 .iter()
                 .filter(|hint| hint.starts_with(partial))
                 .map(|s| format!("{} ", s))
                 .collect();
 
+
+        // only return match if more than one tab is pressed
+        if self.tab_pressed.get() == 0 {
+            if matches.len() == 1 {
+                self.tab_pressed.set(0);
+                return Ok((start, matches));
+            }
+            self.tab_pressed.set(1);
+            print!("\x07");
+            return Ok((start, Vec::new()));
+        } else {
+           
             if matches.is_empty() {
                 return Ok((start, Vec::new()));
             }
 
-            if matches.len() == 1 {
-                let match_str = matches.join(" ");
-                println!("\n{match_str}");
-                self.tab_pressed.set(0);
-                return Ok((start, matches));
-            }
+            
             let mut seen = HashSet::new();
             let mut unique_matches: Vec<String> = matches.clone()
                 .into_iter()
