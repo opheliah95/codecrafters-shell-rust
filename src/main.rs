@@ -47,6 +47,8 @@ impl Completer for MyHelper {
             return Ok((start, Vec::new()));
         }
 
+        
+
         let mut searches: Vec<String> = Vec::new();
         let mut matches: Vec<String> = Vec::new();
         searches = find_exe_path_partial(partial).unwrap();
@@ -70,6 +72,17 @@ impl Completer for MyHelper {
             .collect();
         unique_matches.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
         //println!("unique match {:?}", unique_matches);
+        
+         if self.tab_pressed.get() == 0 {
+            //println!("matches: {:?}", matches);
+            if unique_matches.len() == 1 {
+                self.tab_pressed.set(0);
+                return Ok((start, matches));
+            }
+            self.tab_pressed.set(1);
+            print!("\x07");
+            return Ok((start, Vec::new()));
+        } 
         
 
         if unique_matches.len() > 1 {
