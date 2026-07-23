@@ -4,7 +4,6 @@ use codecrafters_shell::solutions::{
 };
 
 use rustyline::completion::{Candidate, Completer};
-use rustyline::highlight::MatchingBracketHighlighter;
 use rustyline::hint::{Hint, Hinter, HistoryHinter};
 use rustyline::history::FileHistory;
 use rustyline::validate::MatchingBracketValidator;
@@ -70,36 +69,11 @@ impl Completer for MyHelper {
             .collect();
         unique_matches.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
         //println!("unique match {:?}", unique_matches);
+        
+        return Ok((start, unique_matches));
+        
 
-        // only return match if more than one tab is pressed
-        if self.tab_pressed.get() == 0 {
-            //println!("matches: {:?}", matches);
-            if unique_matches.len() == 1 {
-                self.tab_pressed.set(0);
-                return Ok((start, matches));
-            }
-            self.tab_pressed.set(1);
-            print!("\x07");
-            return Ok((start, Vec::new()));
-        } else {
-            let match_str = unique_matches.join(" ");
-            println!("\n{match_str}");
-            self.tab_pressed.set(0);
-
-            println!("$ {}", partial);
-            stdout().flush().unwrap();
-
-            // Ok((start, Vec::new()))
-
-            return Ok((start, unique_matches));
-        }
-        // Find matching hints
     }
-
-    // fn update(&self, line: &mut LineBuffer, start: usize, elected: &str, cl: &mut Changeset) {
-    //     //let end = line.pos();
-    //     //line.replace(start..end, elected, cl);
-    // }
 }
 
 //create hinter
