@@ -80,7 +80,7 @@ impl Completer for MyHelper {
                 .filter(|s| seen.insert(s.clone()))
                 .collect();
             unique_matches.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
-            println!("unique match {:?}", unique_matches);
+            //println!("unique match {:?}", unique_matches);
             if unique_matches.len() > 1 {
                 let match_str = unique_matches.join(" ");
                 println!("\n{match_str}");
