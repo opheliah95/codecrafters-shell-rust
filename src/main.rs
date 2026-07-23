@@ -63,13 +63,14 @@ impl Completer for MyHelper {
                 .filter(|hint| hint.starts_with(partial))
                 .map(|s| format!("{} ", s))
                 .collect();
-            if matches.len() > 2 {
-                let mut seen = HashSet::new();
-                let mut unique_matches: Vec<String> = matches
-                    .into_iter()
-                    .filter(|s| seen.insert(s.clone()))
-                    .collect();
-                unique_matches.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+            let mut seen = HashSet::new();
+            let mut unique_matches: Vec<String> = matches
+                .into_iter()
+                .filter(|s| seen.insert(s.clone()))
+                .collect();
+            unique_matches.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+
+            if unique_matches.len() > 1 {
                 let match_str = unique_matches.join(" ");
                 println!("\n{match_str}");
                 self.tab_pressed.set(0);
