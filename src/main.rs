@@ -75,9 +75,9 @@ impl Completer for MyHelper {
             println!("$ {}", partial);
             stdout().flush().unwrap();
             
-            Ok((start, Vec::new()))
+           // Ok((start, Vec::new()))
 
-            //return Ok((start, unique_matches));
+            return Ok((start, unique_matches));
         }
         // Find matching hints
     }
