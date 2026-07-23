@@ -54,7 +54,7 @@ impl Completer for MyHelper {
         matches = searches
             .iter()
             .filter(|hint| hint.starts_with(partial))
-            .map(|s| format!("{} ", s))
+            .map(|s| format!("{}", s))
             .collect();
 
         if matches.is_empty() {
