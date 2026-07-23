@@ -63,7 +63,7 @@ impl Completer for MyHelper {
                 .filter(|hint| hint.starts_with(partial))
                 .map(|s| format!("{} ", s))
                 .collect();
-            if matches.len() > 1 {
+            if matches.len() > 2 {
                 let mut seen = HashSet::new();
                 let mut unique_matches: Vec<String> = matches
                     .into_iter()
