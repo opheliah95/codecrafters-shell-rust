@@ -10,9 +10,9 @@ use rustyline::validate::MatchingBracketValidator;
 use rustyline::{
     Changeset, Cmd, Completer, ConditionalEventHandler, Context, DefaultEditor, Editor, Event,
     EventContext, EventHandler, Helper, Highlighter, KeyCode, KeyEvent, Modifiers, RepeatCount,
-    Result, Validator, line_buffer::LineBuffer,
+    Result, Validator, CompletionType
 };
-
+use rustyline::config::{Configurer};
 use shellwords;
 use std::cell::Cell;
 use std::collections::HashSet;
@@ -86,7 +86,7 @@ impl Completer for MyHelper {
             if self.tab_pressed.get() == 0 {
                 self.tab_pressed.set(1);
                 print!("\x07");
-                //stdout().flush().unwrap();
+                stdout().flush().unwrap();
                 println!("$ {}", partial);
                 
                 return Ok((start, Vec::new()));
@@ -202,6 +202,7 @@ fn main() -> Result<()> {
     };
     let mut editor: Editor<MyHelper, _> = Editor::new()?;
     editor.set_helper(Some(h));
+    editor.set_completion_type(CompletionType::List);
 
     // //let mut rl= Editor::new()?;
     // editor.bind_sequence(
