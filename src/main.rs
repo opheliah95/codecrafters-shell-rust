@@ -4,15 +4,15 @@ use codecrafters_shell::solutions::{
 };
 
 use rustyline::completion::{Candidate, Completer};
+use rustyline::config::Configurer;
 use rustyline::hint::{Hint, Hinter, HistoryHinter};
 use rustyline::history::FileHistory;
 use rustyline::validate::MatchingBracketValidator;
 use rustyline::{
-    Changeset, Cmd, Completer, ConditionalEventHandler, Context, DefaultEditor, Editor, Event,
-    EventContext, EventHandler, Helper, Highlighter, KeyCode, KeyEvent, Modifiers, RepeatCount,
-    Result, Validator, CompletionType
+    Changeset, Cmd, Completer, CompletionType, ConditionalEventHandler, Context, DefaultEditor,
+    Editor, Event, EventContext, EventHandler, Helper, Highlighter, KeyCode, KeyEvent, Modifiers,
+    RepeatCount, Result, Validator,
 };
-use rustyline::config::{Configurer};
 use shellwords;
 use std::cell::Cell;
 use std::collections::HashSet;
@@ -86,16 +86,18 @@ impl Completer for MyHelper {
             if self.tab_pressed.get() == 0 {
                 self.tab_pressed.set(1);
                 print!("\x07");
-                //stdout().flush().unwrap();
+                stdout().flush().unwrap();
                 //println!("$ {}", partial);
-                
+
                 return Ok((start, Vec::new()));
             } else {
-                self.tab_pressed.set(0);
-                return Ok((start, unique_matches));
-            }
+                println!(); // Print a newline after current typed input
+                println!("{}", unique_matches.join("  ")); // Print matches separated by 2 spaces
+                print!("$ {}", line); // Print prompt and re-display user's current typed command
+                let _ = stdout().flush();
 
-            
+                Ok((start, Vec::new()))
+            }
         }
     }
 }
