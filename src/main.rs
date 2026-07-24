@@ -89,9 +89,11 @@ impl Completer for MyHelper {
                 //println!("$ {}", partial);
                 stdout().flush().unwrap();
                 return Ok((start, Vec::new()));
+            } else {
+                return Ok((start, unique_matches));
             }
 
-            Ok((start, unique_matches))
+            
         }
     }
 }
