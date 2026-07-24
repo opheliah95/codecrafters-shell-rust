@@ -58,6 +58,12 @@ impl Completer for MyHelper {
             .map(|s| format!("{}", s))
             .collect();
 
+
+        let mut matched_fiies = find_exe_path_partial(line).unwrap();
+        if matched_fiies.len() >= 1 {
+            matches.append(&mut matched_fiies);
+        }
+
         if matches.is_empty() {
             return Ok((start, Vec::new()));
         }
@@ -68,6 +74,8 @@ impl Completer for MyHelper {
             .into_iter()
             .filter(|s| seen.insert(s.clone()))
             .collect();
+        
+        
         unique_matches.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
         //println!("unique match {:?}", unique_matches);
 
