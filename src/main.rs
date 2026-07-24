@@ -86,7 +86,7 @@ impl Completer for MyHelper {
             if self.tab_pressed.get() == 0 {
                 self.tab_pressed.set(1);
                 print!("\x07");
-                //println!("$ {}", partial);
+                println!("$ {}", partial);
                 stdout().flush().unwrap();
                 return Ok((start, Vec::new()));
             } else {
