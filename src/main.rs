@@ -73,25 +73,31 @@ impl Completer for MyHelper {
         unique_matches.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
         //println!("unique match {:?}", unique_matches);
         
-        //  if self.tab_pressed.get() == 0 {
-        //     //println!("matches: {:?}", matches);
-        //     // if unique_matches.len() == 1 {
-        //     //     self.tab_pressed.set(0);
-        //     //     return Ok((start, matches));
-        //     // }
-        //     self.tab_pressed.set(1);
-        //     print!("\x07");
-        //     return Ok((start, Vec::new()));
-        // } 
-        
+        let first_match = unique_matches.first().clone().unwrap();
+        let sub = &unique_matches[1..];
 
-        if unique_matches.len() > 1 {
+        if sub.iter().all(|content| content.contains(first_match)) {
+             if unique_matches.len() > 1 {
             return Ok((start, unique_matches));
         } else {
             let last_match = unique_matches.last().clone().unwrap();
             let last_formatted = format!("{} ", last_match);
             return Ok((start, vec![last_formatted]));
         }
+        } else {
+            if self.tab_pressed.get() == 0 {
+                self.tab_pressed.set(1);
+                 print!("\x07");
+                return Ok((start, Vec::new()));
+
+            }
+
+            Ok((start, unique_matches))
+            
+        }
+        
+
+       
             
 
         
