@@ -74,7 +74,7 @@ impl Completer for MyHelper {
         let first_match = unique_matches.first().clone().unwrap();
         let sub = &unique_matches[1..];
 
-        if sub.iter().all(|content| content.contains(first_match)) {
+        if sub.iter().all(|content| content.starts_with(first_match)) {
             if unique_matches.len() > 1 {
                 return Ok((start, unique_matches));
             } else {
