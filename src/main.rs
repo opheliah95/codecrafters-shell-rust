@@ -91,6 +91,7 @@ impl Completer for MyHelper {
                 
                 return Ok((start, Vec::new()));
             } else {
+                self.tab_pressed.set(0);
                 return Ok((start, unique_matches));
             }
 
