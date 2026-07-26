@@ -1,6 +1,6 @@
 #[allow(unused_imports)]
 use codecrafters_shell::solutions::{
-    cd_path, check_valid_path, find_exe_path_partial, get_pwd, run_cmd, run_cmd_with_output,
+    cd_path, check_valid_path, find_exe_path_partial, get_pwd, run_cmd, run_cmd_with_output,find_files_in_pwd
 };
 
 use rustyline::completion::{Candidate, Completer};
@@ -23,6 +23,7 @@ use std::io::{Write, stdout};
 struct MyHelper {
     hints: HashSet<CommandHint>,
     tab_pressed: Cell<u8>,
+    past_cursor_pos: Cell<usize>
 }
 
 impl Completer for MyHelper {
@@ -41,7 +42,22 @@ impl Completer for MyHelper {
         ctx: &Context<'_>,
     ) -> Result<(usize, Vec<Self::Candidate>)> {
         // Find the word being completed (simple split by space)
-        let start = line.rfind(' ').map(|i| i + 1).unwrap_or(0);
+        let line_vec:Vec<&str> = line.split(" ").collect(); // handle input string
+
+        let mut start:usize;
+        start = line.rfind(' ').map(|i| i + 1).unwrap_or(0);
+        //println!("line start at {start}, the content is {}", &line[start..]);
+        //  if line_vec.len() > 1 {
+        //     let old_pos = self.past_cursor_pos.get();
+        //     let current_slice = line[old_pos]
+        //     self.past_cursor_pos.set(pos);
+
+        // } else {
+           
+        //     self.past_cursor_pos.set(pos);
+          
+        // }
+
         let partial = &line[start..pos]; // The part the user typed
         if partial.is_empty() {
             return Ok((start, Vec::new()));
@@ -59,7 +75,7 @@ impl Completer for MyHelper {
             .collect();
 
 
-        let mut matched_fiies = find_exe_path_partial(line).unwrap();
+        let mut matched_fiies = find_files_in_pwd(line).unwrap();
         if matched_fiies.len() >= 1 {
             matches.append(&mut matched_fiies);
         }
@@ -103,7 +119,7 @@ impl Completer for MyHelper {
                 println!("{}", unique_matches.join("  ")); // Print matches separated by 2 spaces
                 print!("$ {}", line); // Print prompt and re-display user's current typed command
                 let _ = stdout().flush();
-
+                self.tab_pressed.set(0);
                 Ok((start, Vec::new()))
             }
         }
@@ -209,6 +225,7 @@ fn main() -> Result<()> {
     let h = MyHelper {
         hints: diy_hints(),
         tab_pressed: Cell::new(0),
+        past_cursor_pos: Cell::new(0)
     };
     let mut editor: Editor<MyHelper, _> = Editor::new()?;
     editor.set_helper(Some(h));

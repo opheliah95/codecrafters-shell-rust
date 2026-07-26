@@ -106,6 +106,41 @@ pub mod solutions {
         Ok(results)
     }
 
+    //find files in current path
+     pub fn find_files_in_pwd(prefix: &str) -> Result<Vec<String>, Error> {
+        println!("prefix is{prefix}");
+        let mut results = Vec::new();
+        let mut cmd: Vec<&str> = prefix.split(" ").collect();
+        let last_arg = cmd.last().unwrap();
+        if let pwd = env::current_dir().unwrap() {
+            let pwd_path = &pwd.into_os_string().into_string().unwrap();
+            let search = format!("{pwd_path}/{last_arg}*", );
+            //println!("Searching {search}");
+                for exe in glob(search.as_str()).unwrap() {
+                    match exe {
+                        Ok(p) => {
+                            let p_to_string = p.file_name().and_then(|s| s.to_str());
+                            let string_spilt: Vec<&str> = p_to_string.unwrap().split("/").collect();
+                            let last_part = string_spilt.last().unwrap().to_string();
+                            //println!("last part is {last_part}");
+                            results.push(last_part);
+
+                        }
+                        Err(e) => println!("Error: {:?}", e),
+                    }
+                }
+        } else {
+            return Err(Error::new(
+                ErrorKind::NotFound,
+                "Environment path not found",
+            ));
+        }
+
+        Ok(results)
+    }
+
+
+
     pub fn run_external_program(cmd: &str) -> bool {
         let args: Vec<String> = cmd.split(" ").map(|x| x.to_string()).collect();
         //println!("$ {cmd}");
