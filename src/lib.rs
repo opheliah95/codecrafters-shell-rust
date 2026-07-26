@@ -108,7 +108,7 @@ pub mod solutions {
 
     //find files in current path
      pub fn find_files_in_pwd(prefix: &str) -> Result<Vec<String>, Error> {
-        println!("prefix is{prefix}");
+        //println!("prefix is{prefix}");
         let mut results = Vec::new();
         let mut cmd: Vec<&str> = prefix.split(" ").collect();
         let last_arg = cmd.last().unwrap();
