@@ -53,7 +53,7 @@ impl Completer for MyHelper {
             if entries.len() == 1 {
                 let mut entry = &entries[0];
                 let mut entry_str = entry.file_name().to_string_lossy().to_string();
-                let fixed_entry = format!("{}/ ", entry_str);
+                let fixed_entry = format!("{}/", entry_str);
                 return Ok((start, vec![fixed_entry]))
             }
 
