@@ -78,6 +78,19 @@ pub mod solutions {
 
     pub fn find_exe_path_partial(prefix: &str) -> Result<Vec<String>, Error> {
         let mut results = Vec::new();
+        let mut is_path = false;
+        let mut cmd: Vec<&str> = prefix.split(" ").collect();
+        let last_arg = cmd.last().unwrap();
+
+        if let Some((first, sec)) = last_arg.split_once("/") {
+            //println!("first is {first}, second is {sec}");
+
+            if first == "." {
+                //println!("exit exe search");
+                return Ok(results);
+            }
+            is_path = true
+        }
 
         if let Some(all_path) = get_env_path() {
             for path in all_path {
@@ -88,9 +101,21 @@ pub mod solutions {
                             let p_to_string = p.file_name().and_then(|s| s.to_str());
                             let string_spilt: Vec<&str> = p_to_string.unwrap().split("/").collect();
                             let last_part = string_spilt.last().unwrap().to_string();
-                            //println!("last part is {last_part}");
-                            results.push(last_part);
+                            // println!("last part is {last_part}");
+                            if !is_path {
+                                results.push(last_part);
+                            } else {
+                                let full_path = p.into_os_string().into_string().unwrap();
+                                //println!("full path: {full_path} and pwd is {pwd_path}");
+                                let mut modified_string = full_path.replace(&path, "");
+                                modified_string = modified_string.trim().to_string();
 
+                                if modified_string.chars().next() == Some('/') {
+                                    modified_string = modified_string[1..].to_string();
+                                }
+                                //println!("updated input {modified_string}");
+                                results.push(modified_string.to_string());
+                            }
                         }
                         Err(e) => println!("Error: {:?}", e),
                     }
@@ -107,28 +132,46 @@ pub mod solutions {
     }
 
     //find files in current path
-     pub fn find_files_in_pwd(prefix: &str) -> Result<Vec<String>, Error> {
+    pub fn find_files_in_pwd(prefix: &str) -> Result<Vec<String>, Error> {
         //println!("prefix is{prefix}");
+        let mut is_path = false;
         let mut results = Vec::new();
         let mut cmd: Vec<&str> = prefix.split(" ").collect();
         let last_arg = cmd.last().unwrap();
+
+        if let Some((first, sec)) = last_arg.split_once("/") {
+            //println!("pwd first is {first}, second is {sec}");
+            is_path = true
+        }
+
         if let pwd = env::current_dir().unwrap() {
             let pwd_path = &pwd.into_os_string().into_string().unwrap();
-            let search = format!("{pwd_path}/{last_arg}*", );
+            let search = format!("{pwd_path}/{last_arg}*",);
             //println!("Searching {search}");
-                for exe in glob(search.as_str()).unwrap() {
-                    match exe {
-                        Ok(p) => {
-                            let p_to_string = p.file_name().and_then(|s| s.to_str());
-                            let string_spilt: Vec<&str> = p_to_string.unwrap().split("/").collect();
-                            let last_part = string_spilt.last().unwrap().to_string();
-                            //println!("last part is {last_part}");
+            for exe in glob(search.as_str()).unwrap() {
+                match exe {
+                    Ok(p) => {
+                        let p_to_string = p.file_name().and_then(|s| s.to_str());
+                        let string_spilt: Vec<&str> = p_to_string.unwrap().split("/").collect();
+                        let last_part = string_spilt.last().unwrap().to_string();
+                        //println!("last part is {}", p_to_string.unwrap().to_string());
+                        if !is_path {
                             results.push(last_part);
-
+                        } else {
+                            let full_path = p.into_os_string().into_string().unwrap();
+                            //println!("full path: {full_path} and pwd is {pwd_path}");
+                            let mut modified_string = full_path.replace(pwd_path, "");
+                            modified_string = modified_string.trim().to_string();
+                            if modified_string.chars().next() == Some('/') {
+                                modified_string = modified_string[1..].to_string();
+                            }
+                            //println!("updated input {modified_string}");
+                            results.push(modified_string.to_string());
                         }
-                        Err(e) => println!("Error: {:?}", e),
                     }
+                    Err(e) => println!("Error: {:?}", e),
                 }
+            }
         } else {
             return Err(Error::new(
                 ErrorKind::NotFound,
@@ -138,8 +181,6 @@ pub mod solutions {
 
         Ok(results)
     }
-
-
 
     pub fn run_external_program(cmd: &str) -> bool {
         let args: Vec<String> = cmd.split(" ").map(|x| x.to_string()).collect();
