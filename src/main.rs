@@ -1,6 +1,7 @@
 #[allow(unused_imports)]
 use codecrafters_shell::solutions::{
-    cd_path, check_valid_path, find_exe_path_partial, get_pwd, run_cmd, run_cmd_with_output,find_files_in_pwd
+    cd_path, check_valid_path, find_exe_path_partial, find_files_in_pwd, get_pwd, run_cmd,
+    run_cmd_with_output,
 };
 
 use rustyline::completion::{Candidate, Completer};
@@ -17,13 +18,14 @@ use shellwords;
 use std::cell::Cell;
 use std::collections::HashSet;
 use std::fmt::format;
+use std::fs;
 use std::io::{Write, stdout};
 
 #[derive(Helper, Validator, Highlighter)]
 struct MyHelper {
     hints: HashSet<CommandHint>,
     tab_pressed: Cell<u8>,
-    past_cursor_pos: Cell<usize>
+    past_cursor_pos: Cell<usize>,
 }
 
 impl Completer for MyHelper {
@@ -41,25 +43,19 @@ impl Completer for MyHelper {
         pos: usize,
         ctx: &Context<'_>,
     ) -> Result<(usize, Vec<Self::Candidate>)> {
-        // Find the word being completed (simple split by space)
-        let line_vec:Vec<&str> = line.split(" ").collect(); // handle input string
-
-        let mut start:usize;
+        let mut start: usize;
         start = line.rfind(' ').map(|i| i + 1).unwrap_or(0);
-        //println!("line start at {start}, the content is {}", &line[start..]);
-        //  if line_vec.len() > 1 {
-        //     let old_pos = self.past_cursor_pos.get();
-        //     let current_slice = line[old_pos]
-        //     self.past_cursor_pos.set(pos);
-
-        // } else {
-           
-        //     self.past_cursor_pos.set(pos);
-          
-        // }
 
         let partial = &line[start..pos]; // The part the user typed
         if partial.is_empty() {
+            // handle one file in current dir
+            let mut entries: Vec<_> = fs::read_dir(".")?.filter_map(|e| e.ok()).collect();
+            if entries.len() == 1 {
+                let mut entry = &entries[0].file_name().to_string_lossy();
+                let fixed_entry = format!("{}/ ", entry);
+                return Ok((start, vec![fixed_entry]))
+            }
+
             return Ok((start, Vec::new()));
         }
 
@@ -73,7 +69,6 @@ impl Completer for MyHelper {
             .filter(|hint| hint.starts_with(partial))
             .map(|s| format!("{}", s))
             .collect();
-
 
         let mut matched_fiies = find_files_in_pwd(line).unwrap();
         if matched_fiies.len() >= 1 {
@@ -90,8 +85,7 @@ impl Completer for MyHelper {
             .into_iter()
             .filter(|s| seen.insert(s.clone()))
             .collect();
-        
-        
+
         unique_matches.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
         //println!("unique match {:?}", unique_matches);
 
@@ -225,7 +219,7 @@ fn main() -> Result<()> {
     let h = MyHelper {
         hints: diy_hints(),
         tab_pressed: Cell::new(0),
-        past_cursor_pos: Cell::new(0)
+        past_cursor_pos: Cell::new(0),
     };
     let mut editor: Editor<MyHelper, _> = Editor::new()?;
     editor.set_helper(Some(h));
