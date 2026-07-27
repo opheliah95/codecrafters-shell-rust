@@ -98,6 +98,10 @@ impl Completer for MyHelper {
                 return Ok((start, unique_matches));
             } else {
                 let last_match = unique_matches.last().clone().unwrap();
+                if last_match.chars().last() == Some('/') {
+                    return Ok((start, vec![last_match.to_string()]));
+                }
+
                 let last_formatted = format!("{} ", last_match);
                 return Ok((start, vec![last_formatted]));
             }
