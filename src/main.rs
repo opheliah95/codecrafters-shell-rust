@@ -51,8 +51,9 @@ impl Completer for MyHelper {
             // handle one file in current dir
             let mut entries: Vec<_> = fs::read_dir(".")?.filter_map(|e| e.ok()).collect();
             if entries.len() == 1 {
-                let mut entry = &entries[0].file_name().to_string_lossy();
-                let fixed_entry = format!("{}/ ", entry);
+                let mut entry = &entries[0];
+                let mut entry_str = entry.file_name().to_string_lossy().to_string();
+                let fixed_entry = format!("{}/ ", entry_str);
                 return Ok((start, vec![fixed_entry]))
             }
 
