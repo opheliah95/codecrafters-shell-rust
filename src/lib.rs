@@ -168,13 +168,13 @@ pub mod solutions {
 
     fn update_found_file_path(input_path: &String, p: PathBuf) -> String {
         let full_path = p.into_os_string().into_string().unwrap();
-        println!("full path: {full_path}");
+        //println!("full path: {full_path}");
         let mut modified_string = full_path.replace(input_path, "");
         modified_string = modified_string.trim().to_string();
         if modified_string.chars().next() == Some('/') {
             modified_string = modified_string[1..].to_string();
         }
-        println!("updated input {modified_string}");
+        //println!("updated input {modified_string}");
         let md: fs::Metadata = metadata(&full_path).unwrap();
         if md.is_dir() {
             modified_string = format!("{modified_string}/");
