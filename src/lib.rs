@@ -11,6 +11,7 @@ pub mod solutions {
     use shellwords;
     use std::fs;
     use std::fs::File;
+    use std::fs::metadata;
 
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
@@ -98,6 +99,7 @@ pub mod solutions {
                 for exe in glob(search.as_str()).unwrap() {
                     match exe {
                         Ok(p) => {
+                            let p_clone = p.clone();
                             let p_to_string = p.file_name().and_then(|s| s.to_str());
                             let string_spilt: Vec<&str> = p_to_string.unwrap().split("/").collect();
                             let last_part = string_spilt.last().unwrap().to_string();
@@ -107,13 +109,7 @@ pub mod solutions {
                             } else {
                                 let full_path = p.into_os_string().into_string().unwrap();
                                 //println!("full path: {full_path} and pwd is {pwd_path}");
-                                let mut modified_string = full_path.replace(&path, "");
-                                modified_string = modified_string.trim().to_string();
-
-                                if modified_string.chars().next() == Some('/') {
-                                    modified_string = modified_string[1..].to_string();
-                                }
-                                //println!("updated input {modified_string}");
+                                let mut modified_string = update_found_file_path(&full_path, p_clone);
                                 results.push(modified_string.to_string());
                             }
                         }
@@ -154,20 +150,8 @@ pub mod solutions {
                         let p_to_string = p.file_name().and_then(|s| s.to_str());
                         let string_spilt: Vec<&str> = p_to_string.unwrap().split("/").collect();
                         let last_part = string_spilt.last().unwrap().to_string();
-                        //println!("last part is {}", p_to_string.unwrap().to_string());
-                        if !is_path {
-                            results.push(last_part);
-                        } else {
-                            let full_path = p.into_os_string().into_string().unwrap();
-                            //println!("full path: {full_path} and pwd is {pwd_path}");
-                            let mut modified_string = full_path.replace(pwd_path, "");
-                            modified_string = modified_string.trim().to_string();
-                            if modified_string.chars().next() == Some('/') {
-                                modified_string = modified_string[1..].to_string();
-                            }
-                            //println!("updated input {modified_string}");
-                            results.push(modified_string.to_string());
-                        }
+                        let modified_string = update_found_file_path(pwd_path, p);
+                        results.push(modified_string.to_string());
                     }
                     Err(e) => println!("Error: {:?}", e),
                 }
@@ -182,6 +166,23 @@ pub mod solutions {
         Ok(results)
     }
 
+    fn update_found_file_path(input_path: &String, p: PathBuf) -> String {
+        let full_path = p.into_os_string().into_string().unwrap();
+        println!("full path: {full_path}");
+        let mut modified_string = full_path.replace(input_path, "");
+        modified_string = modified_string.trim().to_string();
+        if modified_string.chars().next() == Some('/') {
+            modified_string = modified_string[1..].to_string();
+        }
+        println!("updated input {modified_string}");
+        let md: fs::Metadata = metadata(&full_path).unwrap();
+        if md.is_dir() {
+            modified_string = format!("{modified_string}/");
+        }
+
+        modified_string
+    }
+    
     pub fn run_external_program(cmd: &str) -> bool {
         let args: Vec<String> = cmd.split(" ").map(|x| x.to_string()).collect();
         //println!("$ {cmd}");
