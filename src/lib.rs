@@ -200,6 +200,13 @@ pub mod solutions {
             let current_path_buf = pwd_path.join(filename);
             let current_path = Path::new(&current_path_buf);
             //println!("sec: {}, {}",filename, current_path.extension() == first_path.extension());
+            let mut initial = first_file.to_string().clone();
+            initial.pop();
+            //println!("first file is {initial}");
+            if filename.contains(&initial) {
+                //println!("{initial} in {filename}");
+                return true
+            }
             current_path.extension() == first_path.extension()
         })
     }

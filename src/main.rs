@@ -77,6 +77,7 @@ impl Completer for MyHelper {
         //println!("pwd matches {:?}", matched_pwd_files);
         let cloned_match_pwd = matched_pwd_files.clone();
         if !check_file_extension(cloned_match_pwd) {
+           //println!("return false");
            if self.tab_pressed.get() == 0 {
                 self.tab_pressed.set(1);
                 print!("\x07");
