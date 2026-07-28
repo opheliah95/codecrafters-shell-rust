@@ -111,8 +111,8 @@ impl Completer for MyHelper {
                     return Ok((start, vec![last_match.to_string()]));
                 }
 
-                //let last_formatted = format!("{} ", last_match);
-                return Ok((start, vec![last_match.to_string()]));
+                let last_formatted = format!("{} ", last_match);
+                return Ok((start, vec![last_formatted]));
             }
         } else {
             if self.tab_pressed.get() == 0 {
