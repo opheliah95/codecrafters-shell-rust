@@ -312,7 +312,7 @@ fn main() -> Result<()> {
                         cmd if *cmd == "cd" => cd_path(&args[1..]),
                         cmd if *cmd == "pwd" => get_pwd(),
                         cmd if *cmd == "type" => {
-                            if ["echo", "exit", "type", "pwd"].contains(&args[1].as_str()) {
+                            if ["echo", "exit", "type", "pwd", "complete"].contains(&args[1].as_str()) {
                                 println!("{} is a shell builtin", &args[1])
                             } else {
                                 check_valid_path(&args);
