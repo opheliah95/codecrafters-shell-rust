@@ -195,10 +195,11 @@ pub mod solutions {
         let first_file = matches[0].clone();
         let first_path_buf = pwd_path.join(&first_file);
         let first_path = Path::new(&first_path_buf);
-
+        //println!("first path: {}", first_path.to_str().unwrap());
         matches.iter().skip(1).all(|filename| {
             let current_path_buf = pwd_path.join(filename);
             let current_path = Path::new(&current_path_buf);
+            //println!("sec: {}, {}",filename, current_path.extension() == first_path.extension());
             current_path.extension() == first_path.extension()
         })
     }

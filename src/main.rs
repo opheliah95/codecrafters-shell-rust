@@ -77,11 +77,21 @@ impl Completer for MyHelper {
         //println!("pwd matches {:?}", matched_pwd_files);
         let cloned_match_pwd = matched_pwd_files.clone();
         if !check_file_extension(cloned_match_pwd) {
-            print!("\x07");
-            stdout().flush().unwrap();
-            //println!("$ {}", partial);
+           if self.tab_pressed.get() == 0 {
+                self.tab_pressed.set(1);
+                print!("\x07");
+                stdout().flush().unwrap();
+                //println!("$ {}", partial);
 
-            return Ok((start, Vec::new()));
+                return Ok((start, Vec::new()));
+            } else {
+                println!(); // Print a newline after current typed input
+                println!("{}", matched_pwd_files.join("  ")); // Print matches separated by 2 spaces
+                print!("$ {}", line); // Print prompt and re-display user's current typed command
+                let _ = stdout().flush();
+                self.tab_pressed.set(0);
+                return Ok((start, Vec::new()));
+            }
         }
         if matched_pwd_files.len() > 1 {
             //matches.append(&mut matched_pwd_files);
