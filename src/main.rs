@@ -112,7 +112,7 @@ impl Completer for MyHelper {
                 }
 
                 //let last_formatted = format!("{} ", last_match);
-                return Ok((start, vec![last_formatted]));
+                return Ok((start, vec![last_match.to_string()]));
             }
         } else {
             if self.tab_pressed.get() == 0 {
