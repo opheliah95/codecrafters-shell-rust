@@ -199,7 +199,7 @@ pub mod solutions {
         matches.iter().skip(1).all(|filename| {
             let current_path_buf = pwd_path.join(filename);
             let current_path = Path::new(&current_path_buf);
-            //println!("sec: {}, {}",filename, current_path.extension() == first_path.extension());
+            println!("sec: {}, {}",filename, current_path.extension() == first_path.extension());
             current_path.extension() == first_path.extension()
         })
     }
