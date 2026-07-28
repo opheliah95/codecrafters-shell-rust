@@ -75,7 +75,8 @@ impl Completer for MyHelper {
 
         matched_pwd_files.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
         //println!("pwd matches {:?}", matched_pwd_files);
-        if !check_file_extension(matched_pwd_files) {
+        let cloned_match_pwd = matched_pwd_files.clone();
+        if !check_file_extension(cloned_match_pwd) {
             print!("\x07");
             stdout().flush().unwrap();
             //println!("$ {}", partial);
