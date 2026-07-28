@@ -76,7 +76,9 @@ impl Completer for MyHelper {
         matched_pwd_files.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
         //println!("pwd matches {:?}", matched_pwd_files);
         let cloned_match_pwd = matched_pwd_files.clone();
+        let mut pwd_all_matched: bool = true;
         if !check_file_extension(cloned_match_pwd) {
+            pwd_all_matched = false;
            //println!("return false");
            if self.tab_pressed.get() == 0 {
                 self.tab_pressed.set(1);
@@ -103,6 +105,9 @@ impl Completer for MyHelper {
 
         if matched_pwd_files.len() == 1 {
             let mut initial = matched_pwd_files[0].clone();
+             if initial.chars().last() == Some('/') {
+                return  Ok((start, vec![initial]));
+             }
             initial = format!("{} ", initial);
             return Ok((start, vec![initial]));
         }
@@ -129,6 +134,7 @@ impl Completer for MyHelper {
                 return Ok((start, unique_matches));
             } else {
                 let last_match = unique_matches.last().clone().unwrap();
+                
                 if last_match.chars().last() == Some('/') {
                     return Ok((start, vec![last_match.to_string()]));
                 }
