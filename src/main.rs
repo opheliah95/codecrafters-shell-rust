@@ -54,7 +54,7 @@ impl Completer for MyHelper {
                 let mut entry = &entries[0];
                 let mut entry_str = entry.file_name().to_string_lossy().to_string();
                 let fixed_entry = format!("{}/", entry_str);
-                return Ok((start, vec![fixed_entry]))
+                return Ok((start, vec![fixed_entry]));
             }
 
             return Ok((start, Vec::new()));
@@ -72,7 +72,7 @@ impl Completer for MyHelper {
             .collect();
 
         let mut matched_pwd_files = find_files_in_pwd(partial).unwrap();
-        
+
         matched_pwd_files.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
         //println!("pwd matches {:?}", matched_pwd_files);
         if matched_pwd_files.len() >= 1 {
@@ -80,8 +80,11 @@ impl Completer for MyHelper {
             let mut initial = matched_pwd_files[0].clone();
             initial.pop();
             return Ok((start, vec![initial]));
- 
-        } 
+        } else if matched_pwd_files.len() == 1 {
+            let initial = matched_pwd_files[0].clone();
+            return Ok((start, vec![initial]));
+        }
+
         if matches.is_empty() {
             return Ok((start, Vec::new()));
         }
@@ -108,7 +111,7 @@ impl Completer for MyHelper {
                     return Ok((start, vec![last_match.to_string()]));
                 }
 
-                let last_formatted = format!("{} ", last_match);
+                //let last_formatted = format!("{} ", last_match);
                 return Ok((start, vec![last_formatted]));
             }
         } else {
