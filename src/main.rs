@@ -81,7 +81,8 @@ impl Completer for MyHelper {
             initial.pop();
             return Ok((start, vec![initial]));
         } else if matched_pwd_files.len() == 1 {
-            let initial = matched_pwd_files[0].clone();
+            let mut initial = matched_pwd_files[0].clone();
+            initial = format!("{} ", initial);
             return Ok((start, vec![initial]));
         }
 
