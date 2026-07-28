@@ -109,7 +109,8 @@ pub mod solutions {
                             } else {
                                 let full_path = p.into_os_string().into_string().unwrap();
                                 //println!("full path: {full_path} and pwd is {pwd_path}");
-                                let mut modified_string = update_found_file_path(&full_path, p_clone);
+                                let mut modified_string =
+                                    update_found_file_path(&full_path, p_clone);
                                 results.push(modified_string.to_string());
                             }
                         }
@@ -184,7 +185,23 @@ pub mod solutions {
 
         modified_string
     }
-    
+
+    pub fn check_file_extension(matches: Vec<String>) -> bool {
+        if matches.len() <= 1 {
+            return true;
+        }
+
+        let pwd_path = env::current_dir().unwrap();
+        let first_file = matches[0].clone();
+        let first_path_buf = pwd_path.join(&first_file);
+        let first_path = Path::new(&first_path_buf);
+
+        matches.iter().skip(1).all(|filename| {
+            let current_path_buf = pwd_path.join(filename);
+            let current_path = Path::new(&current_path_buf);
+            current_path.extension() == first_path.extension()
+        })
+    }
     pub fn run_external_program(cmd: &str) -> bool {
         let args: Vec<String> = cmd.split(" ").map(|x| x.to_string()).collect();
         //println!("$ {cmd}");

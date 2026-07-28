@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use codecrafters_shell::solutions::{
     cd_path, check_valid_path, find_exe_path_partial, find_files_in_pwd, get_pwd, run_cmd,
-    run_cmd_with_output,
+    run_cmd_with_output,check_file_extension
 };
 
 use rustyline::completion::{Candidate, Completer};
@@ -75,13 +75,20 @@ impl Completer for MyHelper {
 
         matched_pwd_files.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
         //println!("pwd matches {:?}", matched_pwd_files);
+        if !check_file_extension(matched_pwd_files) {
+            print!("\x07");
+            stdout().flush().unwrap();
+            //println!("$ {}", partial);
+
+            return Ok((start, Vec::new()));
+        }
         if matched_pwd_files.len() > 1 {
             //matches.append(&mut matched_pwd_files);
             let mut initial = matched_pwd_files[0].clone();
             initial.pop();
             return Ok((start, vec![initial]));
-        } 
-        
+        }
+
         if matched_pwd_files.len() == 1 {
             let mut initial = matched_pwd_files[0].clone();
             initial = format!("{} ", initial);
