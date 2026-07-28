@@ -123,7 +123,7 @@ pub mod solutions {
                 "Environment path not found",
             ));
         }
-
+        //println!("results are: {:?}", results);
         Ok(results)
     }
 
@@ -162,6 +162,8 @@ pub mod solutions {
                 "Environment path not found",
             ));
         }
+
+        //println!("pwd results are: {:?}", results);
 
         Ok(results)
     }

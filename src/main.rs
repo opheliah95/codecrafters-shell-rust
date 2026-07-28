@@ -71,9 +71,15 @@ impl Completer for MyHelper {
             .map(|s| format!("{}", s))
             .collect();
 
-        let mut matched_fiies = find_files_in_pwd(line).unwrap();
-        if matched_fiies.len() >= 1 {
-            matches.append(&mut matched_fiies);
+        let mut matched_pwd_files = find_files_in_pwd(partial).unwrap();
+        
+        matched_pwd_files.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+        //println!("pwd matches {:?}", matched_pwd_files);
+        if matched_pwd_files.len() >= 1 {
+            //matches.append(&mut matched_pwd_files);
+            let initial = matched_pwd_files[0].clone();
+            return Ok((start, vec![initial]));
+ 
         }
 
         if matches.is_empty() {
