@@ -317,7 +317,16 @@ fn main() -> Result<()> {
                             } else {
                                 check_valid_path(&args);
                             }
-                        }
+                        },
+                        cmd if *cmd == "complete" => {
+                            if args.len() <3 {
+                                continue;
+                            };
+
+                            if *args[1] == "-p".to_string() {
+                                println!("complete: {}: no completion specification", {&args[2]});
+                            }
+                        },
                         _ => {
                             if !run_cmd(&args) {
                                 println!("{}: command not found", input)
