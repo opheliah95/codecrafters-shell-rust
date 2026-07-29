@@ -269,11 +269,7 @@ fn main() -> Result<()> {
     editor.set_helper(Some(h));
     editor.set_completion_type(CompletionType::List);
 
-    let mut complete_cmd = CompleteCmd {
-        flag: String::new(),
-        cmd:String::new(),
-        path: String::new(),
-    };
+    let mut complete_cmd_history: Vec<CompleteCmd> = Vec::new();
 
     loop {
         let readline = editor.readline("$ ");
@@ -330,15 +326,48 @@ fn main() -> Result<()> {
                             if ["-p", "-C"].contains(&args[1].as_str()) {
                                 let first_arg = args[1].as_str();
                                 let last_arg = &args[args.len() - 1];
-                                
+                                let mut complete_cmd = CompleteCmd {
+                                    flag: first_arg.to_string(),
+                                    cmd: last_arg.to_string(),
+                                    path: String::new(),
+                                };
+
                                 match first_arg {
                                     "-p" => {
-                                        complete_cmd.run_complete();
+                                        if complete_cmd_history.len() == 1 {
+                                            complete_cmd.run_complete();
+                                            continue;
+                                        } else {
+                                            //println!("complete history {} and cmd is {}", complete_cmd_history.len(), complete_cmd.cmd);
+                                            let found_cmd = complete_cmd_history
+                                                .iter()
+                                                .find(|cmd| cmd.cmd == complete_cmd.cmd)
+                                                .unwrap();
+
+                                            found_cmd.run_complete();
+
+                                            
+                                        }
                                     }
                                     "-C" => {
                                         let path = args[2].as_str();
                                         complete_cmd.set_cmd(last_arg.to_string());
                                         complete_cmd.set_path(path.to_string());
+                                        // if not exist
+                                        if complete_cmd_history.len() == 0 {
+                                            complete_cmd_history.push(complete_cmd);
+                                            continue;
+                                        }
+                                        //if cmd history have items
+                                        let mut new_history: Vec<CompleteCmd> =
+                                            complete_cmd_history
+                                                .into_iter() // Takes ownership, so we can modify the original vector
+                                                .filter(|cmd| cmd.cmd != complete_cmd.cmd)
+                                                .collect();
+
+                                        //  Push the new command to the filtered list
+                                        new_history.push(complete_cmd);
+                                        complete_cmd_history = new_history;
                                     }
                                     _ => {}
                                 }
