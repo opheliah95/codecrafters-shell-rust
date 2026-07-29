@@ -334,7 +334,8 @@ fn main() -> Result<()> {
 
                                 match first_arg {
                                     "-p" => {
-                                        if complete_cmd_history.len() == 1 {
+                                        
+                                        if complete_cmd_history.len() <= 1 {
                                             complete_cmd.run_complete();
                                             continue;
                                         } else {
@@ -347,7 +348,7 @@ fn main() -> Result<()> {
                                             found_cmd.run_complete();
 
                                             
-                                        }
+                                        } 
                                     }
                                     "-C" => {
                                         let path = args[2].as_str();
