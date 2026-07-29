@@ -5,7 +5,7 @@ pub mod solutions {
     use std::io::{Error, ErrorKind, stdout};
     use std::path::{Path, PathBuf};
     use std::process::Command;
-    mod cmd;
+    pub mod cmd;
     use glob::glob;
     use regex::Regex;
     use shellwords;
@@ -508,4 +508,14 @@ pub mod solutions {
             }
         }
     }
+
+    // fn handle_complete_func(args: Vec<String> ){
+    //     match args.as_slice() {
+    //         ["complete", "-p" @..] => {
+    //             if args.len() < 3 {return };
+    //             let path = args[]
+    //             println!("complete -C '{path}' {cmd}");
+    //         }
+    //     }
+    // }
 }

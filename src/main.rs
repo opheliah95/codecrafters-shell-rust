@@ -1,8 +1,10 @@
 #[allow(unused_imports)]
 use codecrafters_shell::solutions::{
-    cd_path, check_valid_path, find_exe_path_partial, find_files_in_pwd, get_pwd, run_cmd,
-    run_cmd_with_output,check_file_extension
+    cd_path, check_file_extension, check_valid_path, find_exe_path_partial, find_files_in_pwd,
+    get_pwd, run_cmd, run_cmd_with_output,
 };
+
+use codecrafters_shell::solutions::cmd::CompleteCmd;
 
 use rustyline::completion::{Candidate, Completer};
 use rustyline::config::Configurer;
@@ -79,8 +81,8 @@ impl Completer for MyHelper {
         let mut pwd_all_matched: bool = true;
         if !check_file_extension(cloned_match_pwd) {
             pwd_all_matched = false;
-           //println!("return false");
-           if self.tab_pressed.get() == 0 {
+            //println!("return false");
+            if self.tab_pressed.get() == 0 {
                 self.tab_pressed.set(1);
                 print!("\x07");
                 stdout().flush().unwrap();
@@ -105,9 +107,9 @@ impl Completer for MyHelper {
 
         if matched_pwd_files.len() == 1 {
             let mut initial = matched_pwd_files[0].clone();
-             if initial.chars().last() == Some('/') {
-                return  Ok((start, vec![initial]));
-             }
+            if initial.chars().last() == Some('/') {
+                return Ok((start, vec![initial]));
+            }
             initial = format!("{} ", initial);
             return Ok((start, vec![initial]));
         }
@@ -134,7 +136,7 @@ impl Completer for MyHelper {
                 return Ok((start, unique_matches));
             } else {
                 let last_match = unique_matches.last().clone().unwrap();
-                
+
                 if last_match.chars().last() == Some('/') {
                     return Ok((start, vec![last_match.to_string()]));
                 }
@@ -267,11 +269,11 @@ fn main() -> Result<()> {
     editor.set_helper(Some(h));
     editor.set_completion_type(CompletionType::List);
 
-    // //let mut rl= Editor::new()?;
-    // editor.bind_sequence(
-    //     KeyEvent::from('\t'),
-    //     EventHandler::Conditional(Box::new(TabHandler)),
-    // );
+    let mut complete_cmd = CompleteCmd {
+        flag: String::new(),
+        cmd:String::new(),
+        path: String::new(),
+    };
 
     loop {
         let readline = editor.readline("$ ");
@@ -312,21 +314,36 @@ fn main() -> Result<()> {
                         cmd if *cmd == "cd" => cd_path(&args[1..]),
                         cmd if *cmd == "pwd" => get_pwd(),
                         cmd if *cmd == "type" => {
-                            if ["echo", "exit", "type", "pwd", "complete"].contains(&args[1].as_str()) {
+                            if ["echo", "exit", "type", "pwd", "complete"]
+                                .contains(&args[1].as_str())
+                            {
                                 println!("{} is a shell builtin", &args[1])
                             } else {
                                 check_valid_path(&args);
                             }
-                        },
+                        }
                         cmd if *cmd == "complete" => {
-                            if args.len() <3 {
+                            if args.len() < 3 {
                                 continue;
                             };
 
-                            if *args[1] == "-p".to_string() {
-                                println!("complete: {}: no completion specification", {&args[2]});
+                            if ["-p", "-C"].contains(&args[1].as_str()) {
+                                let first_arg = args[1].as_str();
+                                let last_arg = &args[args.len() - 1];
+                                
+                                match first_arg {
+                                    "-p" => {
+                                        complete_cmd.run_complete();
+                                    }
+                                    "-C" => {
+                                        let path = args[2].as_str();
+                                        complete_cmd.set_cmd(last_arg.to_string());
+                                        complete_cmd.set_path(path.to_string());
+                                    }
+                                    _ => {}
+                                }
                             }
-                        },
+                        }
                         _ => {
                             if !run_cmd(&args) {
                                 println!("{}: command not found", input)
