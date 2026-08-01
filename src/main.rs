@@ -67,6 +67,7 @@ impl Completer for MyHelper {
                     if line.trim() == cmd.cmd {
                         //println!("{line} is a complete cmd");
                         let mut output = strip_trailing_nl(&mut cmd.read_stdout());
+                        output = format!("{output} ");
                         //println!("output is {output}");
                         return Ok((start, vec![output]));
 
