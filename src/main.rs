@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use codecrafters_shell::solutions::{
     cd_path, check_file_extension, check_valid_path, find_exe_path_partial, find_files_in_pwd,
-    get_pwd, run_cmd, run_cmd_with_output,
+    get_pwd, run_cmd, run_cmd_with_output,strip_trailing_nl
 };
 
 use codecrafters_shell::solutions::cmd::CompleteCmd;
@@ -18,16 +18,26 @@ use rustyline::{
 };
 use shellwords;
 use std::cell::Cell;
+use std::cell::RefCell;
 use std::collections::HashSet;
 use std::fmt::format;
 use std::fs;
 use std::io::{Write, stdout};
+use std::rc::Rc;
 
-#[derive(Helper, Validator, Highlighter)]
+#[derive(Clone, Helper, Validator, Highlighter)]
 struct MyHelper {
-    hints: HashSet<CommandHint>,
+    //hints: HashSet<CommandHint>,
     tab_pressed: Cell<u8>,
     past_cursor_pos: Cell<usize>,
+    // add completer
+    complete_history: Rc<RefCell<Vec<CompleteCmd>>>,
+}
+
+impl MyHelper {
+    fn add_history(&mut self, cmd: CompleteCmd) {
+        self.complete_history.borrow_mut().push(cmd);
+    }
 }
 
 impl Completer for MyHelper {
@@ -47,9 +57,23 @@ impl Completer for MyHelper {
     ) -> Result<(usize, Vec<Self::Candidate>)> {
         let mut start: usize;
         start = line.rfind(' ').map(|i| i + 1).unwrap_or(0);
-
         let partial = &line[start..pos]; // The part the user typed
+        let history = self.complete_history.borrow();
+
         if partial.is_empty() {
+            // check if user entered complete command
+            if history.len() > 0 {
+                for cmd in history.iter() {
+                    if line.trim() == cmd.cmd {
+                        //println!("{line} is a complete cmd");
+                        let mut output = strip_trailing_nl(&mut cmd.read_stdout());
+                        //println!("output is {output}");
+                        return Ok((start, vec![output]));
+
+                    }
+                }
+            }
+
             // handle one file in current dir
             let mut entries: Vec<_> = fs::read_dir(".")?.filter_map(|e| e.ok()).collect();
             if entries.len() == 1 {
@@ -260,16 +284,18 @@ impl ConditionalEventHandler for TabHandler {
 
 fn main() -> Result<()> {
     //TODO: Uncomment the code below to pass the first stage
-    let h = MyHelper {
-        hints: diy_hints(),
+    let mut complete_cmd_history: Vec<CompleteCmd> = Vec::new();
+    let complete_history = Rc::new(RefCell::new(Vec::<CompleteCmd>::new()));
+
+    let mut h = MyHelper {
+        //hints: diy_hints(),
         tab_pressed: Cell::new(0),
         past_cursor_pos: Cell::new(0),
+        complete_history: complete_history.clone(),
     };
     let mut editor: Editor<MyHelper, _> = Editor::new()?;
     editor.set_helper(Some(h));
     editor.set_completion_type(CompletionType::List);
-
-    let mut complete_cmd_history: Vec<CompleteCmd> = Vec::new();
 
     loop {
         let readline = editor.readline("$ ");
@@ -334,8 +360,7 @@ fn main() -> Result<()> {
 
                                 match first_arg {
                                     "-p" => {
-                                        
-                                        if complete_cmd_history.len() <= 1 {
+                                        if complete_cmd_history.len() == 0 {
                                             complete_cmd.run_complete();
                                             continue;
                                         } else {
@@ -346,17 +371,18 @@ fn main() -> Result<()> {
                                                 .unwrap();
 
                                             found_cmd.run_complete();
-
-                                            
-                                        } 
+                                        }
                                     }
                                     "-C" => {
                                         let path = args[2].as_str();
                                         complete_cmd.set_cmd(last_arg.to_string());
                                         complete_cmd.set_path(path.to_string());
+                                        let mut temp_hist = complete_history.borrow_mut();
                                         // if not exist
                                         if complete_cmd_history.len() == 0 {
-                                            complete_cmd_history.push(complete_cmd);
+                                            complete_cmd_history.push(complete_cmd.clone());
+                                            *temp_hist = vec![complete_cmd.clone()];
+                                            //println!("cmd added: {path} and cmd {last_arg}, set path: {}", complete_cmd.path);
                                             continue;
                                         }
                                         //if cmd history have items
@@ -368,7 +394,15 @@ fn main() -> Result<()> {
 
                                         //  Push the new command to the filtered list
                                         new_history.push(complete_cmd);
-                                        complete_cmd_history = new_history;
+
+                                        complete_cmd_history = new_history.clone();
+
+                                        // //println!("lengtg is : {}", new_history.clone().len());
+                                        //  for i in new_history.clone().into_iter() {
+                                        //     println!("the new_HISTORY cmd is {} ",  i.cmd)
+                                        // }
+
+                                        *temp_hist = new_history;
                                     }
                                     _ => {}
                                 }

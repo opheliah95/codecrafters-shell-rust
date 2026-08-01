@@ -205,7 +205,7 @@ pub mod solutions {
             //println!("first file is {initial}");
             if filename.contains(&initial) {
                 //println!("{initial} in {filename}");
-                return true
+                return true;
             }
             current_path.extension() == first_path.extension()
         })
@@ -507,6 +507,21 @@ pub mod solutions {
                 File::create(path).unwrap();
             }
         }
+    }
+
+    pub fn strip_trailing_nl(input: &mut String) -> String {
+        let new_len = input
+            .char_indices()
+            .rev()
+            .find(|(_, c)| !matches!(c, '\n' | '\r'))
+            .map_or(0, |(i, _)| i + 1);
+        
+        
+        if new_len != input.len() {
+            input.truncate(new_len);
+        }
+
+        return input.to_string();
     }
 
     // fn handle_complete_func(args: Vec<String> ){
