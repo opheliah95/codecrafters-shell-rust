@@ -54,6 +54,9 @@ impl Completer for MyHelper {
         let partial = &line[start..pos];
         let history = self.complete_history.borrow();
         let input: Vec<&str> = line.split(' ').collect();
+        let COMP_LINE = line.trim();
+        let COMP_POINT = COMP_LINE.len();
+
         
         // Check if there's a -C completer registered for the command
         if input.len() > 0 {
@@ -72,6 +75,8 @@ impl Completer for MyHelper {
                     .arg(command_name)
                     .arg(word_being_completed)
                     .arg(previous_word)
+                    .env(COMP_LINE)
+                    .env(COMP_POINT)
                     .output()?;
                 
                 if output.status.success() {
