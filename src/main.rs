@@ -391,7 +391,7 @@ fn main() -> Result<()> {
                                             let filtered_cmd = complete_cmd_history
                                                 .iter()
                                                 .filter(|cmd| cmd.cmd != complete_cmd.cmd)
-                                                .collect();
+                                                .cloned().collect();
                                             *temp_hist = filtered_cmd;
                                             continue;
                                         } else {
