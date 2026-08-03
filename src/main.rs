@@ -361,7 +361,7 @@ fn main() -> Result<()> {
                                 continue;
                             };
 
-                            if ["-p", "-C"].contains(&args[1].as_str()) {
+                            if ["-p", "-C", "-r"].contains(&args[1].as_str()) {
                                 let first_arg = args[1].as_str();
                                 let last_arg = &args[args.len() - 1];
                                 let mut complete_cmd = CompleteCmd {
@@ -384,23 +384,27 @@ fn main() -> Result<()> {
 
                                             found_cmd.run_complete();
                                         }
-                                    }
+                                    },
                                     "-r" => {
+                                        //println!("-r cmd");
                                         if complete_cmd_history.len() > 0 {
                                             // remove registered cmd
-                                            let filtered_cmd = complete_cmd_history
+                                            //println!("start filtered cmd: {}", complete_cmd_history.len());
+                                            let filtered_cmd: Vec<CompleteCmd> = complete_cmd_history
                                                 .iter()
                                                 .filter(|cmd| cmd.cmd != complete_cmd.cmd)
                                                 .cloned().collect();
-                                            *temp_hist = filtered_cmd;
-                                             complete_cmd.set_path(String::new());
+                                            //println!("filtered cmd: {}", filtered_cmd.len());
+                                            *temp_hist = filtered_cmd.clone();
+                                            complete_cmd_history = filtered_cmd;
+                                            //complete_cmd.set_path(String::new());
                                             continue;
                                         } else {
                                             println!(
                                                 "complete: {last_arg}: no completion specification"
                                             )
                                         }
-                                    }
+                                    },
                                     "-C" => {
                                         let path = args[2].as_str();
                                         complete_cmd.set_cmd(last_arg.to_string());
