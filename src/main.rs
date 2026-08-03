@@ -393,6 +393,7 @@ fn main() -> Result<()> {
                                                 .filter(|cmd| cmd.cmd != complete_cmd.cmd)
                                                 .cloned().collect();
                                             *temp_hist = filtered_cmd;
+                                             complete_cmd.set_path(String::new());
                                             continue;
                                         } else {
                                             println!(
