@@ -83,7 +83,8 @@ impl Completer for MyHelper {
                     if !completions.is_empty() {
                         // Add trailing space if there's only one completion
                         if completions.len() == 1 {
-                            return Ok((start, completions));
+                            let final_result = format!("{} ", completions[0]);
+                            return Ok((start, vec![final_result]));
                         }
                         return Ok((start, completions));
                     }
@@ -107,9 +108,9 @@ impl Completer for MyHelper {
                 }
             }
 
-            if &*self.cached_complete.borrow() == input[0] {
-                println!("input is complete: {}", input[0])
-            }
+            // if &*self.cached_complete.borrow() == input[0] {
+            //     println!("input is complete: {}", input[0])
+            // }
 
             *self.cached_complete.borrow_mut() = String::new();
             let mut entries: Vec<_> = fs::read_dir(".")?.filter_map(|e| e.ok()).collect();
