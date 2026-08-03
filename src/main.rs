@@ -32,6 +32,7 @@ struct MyHelper {
     past_cursor_pos: Cell<usize>,
     // add completer
     complete_history: Rc<RefCell<Vec<CompleteCmd>>>,
+    cached_complete: RefCell<String>
 }
 
 impl MyHelper {
@@ -59,14 +60,36 @@ impl Completer for MyHelper {
         start = line.rfind(' ').map(|i| i + 1).unwrap_or(0);
         let partial = &line[start..pos]; // The part the user typed
         let history = self.complete_history.borrow();
+        let input = line.split(" ").collect::<Vec<&str>>();
+        //println!("input received are : {:?}", input);
+        if input.len() > 2 {
+            let input_end = input.last().unwrap();
+            let start_cmd = input[0];
+            if history.len() > 0 {
+                if let Some(result) = history.iter().find(|cmd| cmd.cmd == start_cmd) {
+                    //println!("start match: {start_cmd}");
+                    let mut output = strip_trailing_nl(&mut result.read_stdout());
+                    let output_vec = output.split(" ").collect::<Vec<&str>>();
+                    if let Some(cmd_completed) = output_vec.iter().find(|cmd| cmd.contains(input_end)) {
+                         return Ok((start, vec![cmd_completed.to_string()]));
+
+                    }
+
+
+                }
+            }
+        }
 
         if partial.is_empty() {
             // check if user entered complete command
             if history.len() > 0 {
                 for cmd in history.iter() {
-                    if line.trim() == cmd.cmd {
+                    let cmd_input = line.trim();
+                    if cmd_input == cmd.cmd {
                         //println!("{line} is a complete cmd");
+                        *self.cached_complete.borrow_mut() = cmd_input.to_string();
                         let mut output = strip_trailing_nl(&mut cmd.read_stdout());
+                        //let output_vec = output.split(" ").collect::<Vec<&str>>();
                         output = format!("{output} ");
                         //println!("output is {output}");
                         return Ok((start, vec![output]));
@@ -75,7 +98,13 @@ impl Completer for MyHelper {
                 }
             }
 
+            // check if history is empty
+            if &*self.cached_complete.borrow() == input[0] {
+                println! ("input is complete: {}", input[0])
+            }
+
             // handle one file in current dir
+            *self.cached_complete.borrow_mut()  = String::new(); // clear history
             let mut entries: Vec<_> = fs::read_dir(".")?.filter_map(|e| e.ok()).collect();
             if entries.len() == 1 {
                 let mut entry = &entries[0];
@@ -86,6 +115,12 @@ impl Completer for MyHelper {
 
             return Ok((start, Vec::new()));
         }
+
+
+
+
+        //clear history
+        *self.cached_complete.borrow_mut()  = String::new();
 
         let mut searches: Vec<String> = Vec::new();
         let mut matches: Vec<String> = Vec::new();
@@ -287,12 +322,13 @@ fn main() -> Result<()> {
     //TODO: Uncomment the code below to pass the first stage
     let mut complete_cmd_history: Vec<CompleteCmd> = Vec::new();
     let complete_history = Rc::new(RefCell::new(Vec::<CompleteCmd>::new()));
-
+    let cached_complete_cmd = RefCell::new(String::new());
     let mut h = MyHelper {
         //hints: diy_hints(),
         tab_pressed: Cell::new(0),
         past_cursor_pos: Cell::new(0),
         complete_history: complete_history.clone(),
+        cached_complete: cached_complete_cmd
     };
     let mut editor: Editor<MyHelper, _> = Editor::new()?;
     editor.set_helper(Some(h));
