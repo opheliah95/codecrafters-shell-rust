@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use codecrafters_shell::solutions::{
     cd_path, check_file_extension, check_valid_path, find_exe_path_partial, find_files_in_pwd,
-    get_pwd, run_cmd, run_cmd_with_output,strip_trailing_nl
+    get_pwd, run_cmd, run_cmd_with_output, strip_trailing_nl
 };
 
 use codecrafters_shell::solutions::cmd::CompleteCmd;
@@ -24,13 +24,12 @@ use std::fmt::format;
 use std::fs;
 use std::io::{Write, stdout};
 use std::rc::Rc;
+use std::process::Command;
 
 #[derive(Clone, Helper, Validator, Highlighter)]
 struct MyHelper {
-    //hints: HashSet<CommandHint>,
     tab_pressed: Cell<u8>,
     past_cursor_pos: Cell<usize>,
-    // add completer
     complete_history: Rc<RefCell<Vec<CompleteCmd>>>,
     cached_complete: RefCell<String>
 }
@@ -43,72 +42,80 @@ impl MyHelper {
 
 impl Completer for MyHelper {
     type Candidate = String;
-    // TODO: let the implementers choose/find word boundaries ??? => Lexer
 
-    /// Takes the currently edited `line` with the cursor `pos`ition and
-    /// returns the start position and the completion candidates for the
-    /// partial word to be completed.
-    ///
-    /// `("ls /usr/loc", 11)` => `Ok((3, vec!["/usr/local/"]))`
     fn complete(
-        &self, // FIXME should be `&mut self`
+        &self,
         line: &str,
         pos: usize,
         ctx: &Context<'_>,
     ) -> Result<(usize, Vec<Self::Candidate>)> {
         let mut start: usize;
         start = line.rfind(' ').map(|i| i + 1).unwrap_or(0);
-        let partial = &line[start..pos]; // The part the user typed
+        let partial = &line[start..pos];
         let history = self.complete_history.borrow();
-        let input = line.split(" ").collect::<Vec<&str>>();
-        //println!("input received are : {:?}", input);
-        if input.len() > 2 {
-            let input_end = input.last().unwrap();
-            let start_cmd = input[0];
-            if history.len() > 0 {
-                if let Some(result) = history.iter().find(|cmd| cmd.cmd == start_cmd) {
-                    //println!("start match: {start_cmd}");
-                    let mut output = strip_trailing_nl(&mut result.read_stdout());
-                    let output_vec = output.split(" ").collect::<Vec<&str>>();
-                    if let Some(cmd_completed) = output_vec.iter().find(|cmd| cmd.contains(input_end)) {
-                         return Ok((start, vec![cmd_completed.to_string()]));
-
+        let input: Vec<&str> = line.split(' ').collect();
+        
+        // Check if there's a -C completer registered for the command
+        if input.len() > 0 {
+            let command_name = input[0];
+            if let Some(completer_cmd) = history.iter().find(|cmd| cmd.cmd == command_name && cmd.flag == "-C") {
+                // Found a -C completer, invoke it with the proper arguments
+                let word_being_completed = partial;
+                let previous_word = if input.len() > 1 { 
+                    input[input.len() - 2] 
+                } else { 
+                    "" 
+                };
+                
+                // Execute the completer script with: command_name, word_being_completed, previous_word
+                let output = Command::new(&completer_cmd.path)
+                    .arg(command_name)
+                    .arg(word_being_completed)
+                    .arg(previous_word)
+                    .output()?;
+                
+                if output.status.success() {
+                    let completions = String::from_utf8_lossy(&output.stdout)
+                        .lines()
+                        .map(|s| s.to_string())
+                        .collect::<Vec<String>>();
+                    
+                    if !completions.is_empty() {
+                        // Add trailing space if there's only one completion
+                        if completions.len() == 1 {
+                            return Ok((start, completions));
+                        }
+                        return Ok((start, completions));
                     }
-
-
                 }
+                
+                // If completer failed or returned nothing, fall through to other completion logic
             }
         }
 
+        // Original completion logic for builtins and file completion
         if partial.is_empty() {
-            // check if user entered complete command
             if history.len() > 0 {
                 for cmd in history.iter() {
                     let cmd_input = line.trim();
                     if cmd_input == cmd.cmd {
-                        //println!("{line} is a complete cmd");
                         *self.cached_complete.borrow_mut() = cmd_input.to_string();
                         let mut output = strip_trailing_nl(&mut cmd.read_stdout());
-                        //let output_vec = output.split(" ").collect::<Vec<&str>>();
                         output = format!("{output} ");
-                        //println!("output is {output}");
                         return Ok((start, vec![output]));
-
                     }
                 }
             }
 
-            // check if history is empty
             if &*self.cached_complete.borrow() == input[0] {
-                println! ("input is complete: {}", input[0])
+                println!("input is complete: {}", input[0])
             }
 
-            // handle one file in current dir
-            *self.cached_complete.borrow_mut()  = String::new(); // clear history
+            *self.cached_complete.borrow_mut() = String::new();
             let mut entries: Vec<_> = fs::read_dir(".")?.filter_map(|e| e.ok()).collect();
             if entries.len() == 1 {
-                let mut entry = &entries[0];
-                let mut entry_str = entry.file_name().to_string_lossy().to_string();
+                let entry = &entries[0];
+                let entry_str = entry.file_name().to_string_lossy().to_string();
                 let fixed_entry = format!("{}/", entry_str);
                 return Ok((start, vec![fixed_entry]));
             }
@@ -116,11 +123,7 @@ impl Completer for MyHelper {
             return Ok((start, Vec::new()));
         }
 
-
-
-
-        //clear history
-        *self.cached_complete.borrow_mut()  = String::new();
+        *self.cached_complete.borrow_mut() = String::new();
 
         let mut searches: Vec<String> = Vec::new();
         let mut matches: Vec<String> = Vec::new();
@@ -136,30 +139,25 @@ impl Completer for MyHelper {
         let mut matched_pwd_files = find_files_in_pwd(partial).unwrap();
 
         matched_pwd_files.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
-        //println!("pwd matches {:?}", matched_pwd_files);
         let cloned_match_pwd = matched_pwd_files.clone();
         let mut pwd_all_matched: bool = true;
         if !check_file_extension(cloned_match_pwd) {
             pwd_all_matched = false;
-            //println!("return false");
             if self.tab_pressed.get() == 0 {
                 self.tab_pressed.set(1);
                 print!("\x07");
                 stdout().flush().unwrap();
-                //println!("$ {}", partial);
-
                 return Ok((start, Vec::new()));
             } else {
-                println!(); // Print a newline after current typed input
-                println!("{}", matched_pwd_files.join("  ")); // Print matches separated by 2 spaces
-                print!("$ {}", line); // Print prompt and re-display user's current typed command
+                println!();
+                println!("{}", matched_pwd_files.join("  "));
+                print!("$ {}", line);
                 let _ = stdout().flush();
                 self.tab_pressed.set(0);
                 return Ok((start, Vec::new()));
             }
         }
         if matched_pwd_files.len() > 1 {
-            //matches.append(&mut matched_pwd_files);
             let mut initial = matched_pwd_files[0].clone();
             initial.pop();
             return Ok((start, vec![initial]));
@@ -186,19 +184,18 @@ impl Completer for MyHelper {
             .collect();
 
         unique_matches.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
-        //println!("unique match {:?}", unique_matches);
 
-        let first_match = unique_matches.first().clone().unwrap();
+        let first_match = unique_matches.first().cloned().unwrap_or_default();
         let sub = &unique_matches[1..];
 
-        if sub.iter().all(|content| content.starts_with(first_match)) {
+        if sub.iter().all(|content| content.starts_with(&first_match)) {
             if unique_matches.len() > 1 {
                 return Ok((start, unique_matches));
             } else {
-                let last_match = unique_matches.last().clone().unwrap();
+                let last_match = unique_matches.last().cloned().unwrap_or_default();
 
                 if last_match.chars().last() == Some('/') {
-                    return Ok((start, vec![last_match.to_string()]));
+                    return Ok((start, vec![last_match]));
                 }
 
                 let last_formatted = format!("{} ", last_match);
@@ -209,13 +206,11 @@ impl Completer for MyHelper {
                 self.tab_pressed.set(1);
                 print!("\x07");
                 stdout().flush().unwrap();
-                //println!("$ {}", partial);
-
                 return Ok((start, Vec::new()));
             } else {
-                println!(); // Print a newline after current typed input
-                println!("{}", unique_matches.join("  ")); // Print matches separated by 2 spaces
-                print!("$ {}", line); // Print prompt and re-display user's current typed command
+                println!();
+                println!("{}", unique_matches.join("  "));
+                print!("$ {}", line);
                 let _ = stdout().flush();
                 self.tab_pressed.set(0);
                 Ok((start, Vec::new()))
@@ -224,7 +219,6 @@ impl Completer for MyHelper {
     }
 }
 
-//create hinter
 #[derive(Hash, Debug, PartialEq, Eq)]
 struct CommandHint {
     display: String,
@@ -267,23 +261,6 @@ impl Hinter for MyHelper {
 
     fn hint(&self, line: &str, pos: usize, _ctx: &Context<'_>) -> Option<CommandHint> {
         None
-        //     if line.is_empty() || pos < line.len() {
-        //         return None;
-        //     }
-
-        //     self.hints
-        //         .iter()
-        //         .filter_map(|hint| {
-        //             // expect hint after word complete, like redis cli, add condition:
-        //             // line.ends_with(" ")
-        //             if hint.display.starts_with(line) && line.len() >=3 {
-        //                 Some(hint.suffix(pos))
-
-        //             } else {
-        //                 None
-        //             }
-        //         })
-        //         .next()
     }
 }
 
@@ -303,28 +280,22 @@ impl ConditionalEventHandler for TabHandler {
     fn handle(&self, evt: &Event, n: RepeatCount, _: bool, ctx: &EventContext) -> Option<Cmd> {
         if let Some(k) = evt.get(0) {
             if let Some(txt) = ctx.hint_text() {
-                //println!("enter tab");
-                // println!("tab activated, text is {txt}");
                 if txt.len() == 1 {
                     return Some(Cmd::Insert(1, txt.to_string()));
                 }
             } else {
-                //println!("error handling event");
                 return Some(Cmd::Noop);
             }
         }
-        //println!("error receiving input");
         None
     }
 }
 
 fn main() -> Result<()> {
-    //TODO: Uncomment the code below to pass the first stage
     let mut complete_cmd_history: Vec<CompleteCmd> = Vec::new();
     let complete_history = Rc::new(RefCell::new(Vec::<CompleteCmd>::new()));
     let cached_complete_cmd = RefCell::new(String::new());
     let mut h = MyHelper {
-        //hints: diy_hints(),
         tab_pressed: Cell::new(0),
         past_cursor_pos: Cell::new(0),
         complete_history: complete_history.clone(),
@@ -339,7 +310,6 @@ fn main() -> Result<()> {
         match readline {
             Ok(line) => {
                 let mut input = String::new();
-
                 input = line.trim().to_string();
                 let mut args = shellwords::split(&input).unwrap();
 
@@ -356,14 +326,11 @@ fn main() -> Result<()> {
                     if let Some(index) = split_index {
                         if index + 1 >= args.len() {
                             eprintln!("Error: Missing file path after redirection");
-                            // Don't break, just continue to next prompt
                             continue;
                         }
 
                         let file_dir = args.split_off(index + 1);
                         let operator = args.pop();
-                        // println!("now args is {:?}", args);
-                        // println!("now file dir is: {:?}", file_dir);
                         run_cmd_with_output(args.clone(), file_dir[0].to_string(), operator);
                         continue;
                     }
@@ -401,7 +368,6 @@ fn main() -> Result<()> {
                                             complete_cmd.run_complete();
                                             continue;
                                         } else {
-                                            //println!("complete history {} and cmd is {}", complete_cmd_history.len(), complete_cmd.cmd);
                                             let found_cmd = complete_cmd_history
                                                 .iter()
                                                 .find(|cmd| cmd.cmd == complete_cmd.cmd)
@@ -415,30 +381,20 @@ fn main() -> Result<()> {
                                         complete_cmd.set_cmd(last_arg.to_string());
                                         complete_cmd.set_path(path.to_string());
                                         let mut temp_hist = complete_history.borrow_mut();
-                                        // if not exist
                                         if complete_cmd_history.len() == 0 {
                                             complete_cmd_history.push(complete_cmd.clone());
                                             *temp_hist = vec![complete_cmd.clone()];
-                                            //println!("cmd added: {path} and cmd {last_arg}, set path: {}", complete_cmd.path);
                                             continue;
                                         }
-                                        //if cmd history have items
                                         let mut new_history: Vec<CompleteCmd> =
                                             complete_cmd_history
-                                                .into_iter() // Takes ownership, so we can modify the original vector
+                                                .into_iter()
                                                 .filter(|cmd| cmd.cmd != complete_cmd.cmd)
                                                 .collect();
 
-                                        //  Push the new command to the filtered list
                                         new_history.push(complete_cmd);
 
                                         complete_cmd_history = new_history.clone();
-
-                                        // //println!("lengtg is : {}", new_history.clone().len());
-                                        //  for i in new_history.clone().into_iter() {
-                                        //     println!("the new_HISTORY cmd is {} ",  i.cmd)
-                                        // }
-
                                         *temp_hist = new_history;
                                     }
                                     _ => {}
@@ -457,8 +413,3 @@ fn main() -> Result<()> {
         }
     }
 }
-
-// match input.trim() {
-//     "xyz" =>println!("xyz: command not found"),
-//     _ => ()
-// }
