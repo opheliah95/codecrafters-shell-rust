@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use codecrafters_shell::solutions::{
     cd_path, check_file_extension, check_valid_path, find_exe_path_partial, find_files_in_pwd,
-    get_pwd, run_cmd, run_cmd_with_output, strip_trailing_nl
+    get_pwd, run_cmd, run_cmd_with_output, strip_trailing_nl,
 };
 
 use codecrafters_shell::solutions::cmd::CompleteCmd;
@@ -23,15 +23,15 @@ use std::collections::HashSet;
 use std::fmt::format;
 use std::fs;
 use std::io::{Write, stdout};
-use std::rc::Rc;
 use std::process::Command;
+use std::rc::Rc;
 
 #[derive(Clone, Helper, Validator, Highlighter)]
 struct MyHelper {
     tab_pressed: Cell<u8>,
     past_cursor_pos: Cell<usize>,
     complete_history: Rc<RefCell<Vec<CompleteCmd>>>,
-    cached_complete: RefCell<String>
+    cached_complete: RefCell<String>,
 }
 
 impl MyHelper {
@@ -57,34 +57,36 @@ impl Completer for MyHelper {
         let COMP_LINE = line.trim();
         let COMP_POINT = COMP_LINE.len().to_string();
 
-        
         // Check if there's a -C completer registered for the command
         if input.len() > 0 {
             let command_name = input[0];
-            if let Some(completer_cmd) = history.iter().find(|cmd| cmd.cmd == command_name && cmd.flag == "-C") {
+            if let Some(completer_cmd) = history
+                .iter()
+                .find(|cmd| cmd.cmd == command_name && cmd.flag == "-C")
+            {
                 // Found a -C completer, invoke it with the proper arguments
                 let word_being_completed = partial;
-                let previous_word = if input.len() > 1 { 
-                    input[input.len() - 2] 
-                } else { 
-                    "" 
+                let previous_word = if input.len() > 1 {
+                    input[input.len() - 2]
+                } else {
+                    ""
                 };
-                
+
                 // Execute the completer script with: command_name, word_being_completed, previous_word
                 let output = Command::new(&completer_cmd.path)
                     .arg(command_name)
                     .arg(word_being_completed)
                     .arg(previous_word)
-                    .env("COMP_LINE" , COMP_LINE)
+                    .env("COMP_LINE", COMP_LINE)
                     .env("COMP_POINT", COMP_POINT)
                     .output()?;
-                
+
                 if output.status.success() {
                     let completions = String::from_utf8_lossy(&output.stdout)
                         .lines()
                         .map(|s| s.to_string())
                         .collect::<Vec<String>>();
-                    
+
                     if !completions.is_empty() {
                         // Add trailing space if there's only one completion
                         if completions.len() == 1 {
@@ -94,7 +96,7 @@ impl Completer for MyHelper {
                         return Ok((start, completions));
                     }
                 }
-                
+
                 // If completer failed or returned nothing, fall through to other completion logic
             }
         }
@@ -305,7 +307,7 @@ fn main() -> Result<()> {
         tab_pressed: Cell::new(0),
         past_cursor_pos: Cell::new(0),
         complete_history: complete_history.clone(),
-        cached_complete: cached_complete_cmd
+        cached_complete: cached_complete_cmd,
     };
     let mut editor: Editor<MyHelper, _> = Editor::new()?;
     editor.set_helper(Some(h));
@@ -367,6 +369,7 @@ fn main() -> Result<()> {
                                     cmd: last_arg.to_string(),
                                     path: String::new(),
                                 };
+                                let mut temp_hist = complete_history.borrow_mut();
 
                                 match first_arg {
                                     "-p" => {
@@ -382,11 +385,25 @@ fn main() -> Result<()> {
                                             found_cmd.run_complete();
                                         }
                                     }
+                                    "-r" => {
+                                        if complete_cmd_history.len() > 0 {
+                                            // remove registered cmd
+                                            let filtered_cmd = complete_cmd_history
+                                                .iter()
+                                                .find(|cmd| cmd.cmd != complete_cmd.cmd)
+                                                .unwrap();
+                                            *temp_hist = filtered_cmd;
+                                            continue;
+                                        } else {
+                                            println!(
+                                                "complete: {last_arg}: no completion specification"
+                                            )
+                                        }
+                                    }
                                     "-C" => {
                                         let path = args[2].as_str();
                                         complete_cmd.set_cmd(last_arg.to_string());
                                         complete_cmd.set_path(path.to_string());
-                                        let mut temp_hist = complete_history.borrow_mut();
                                         if complete_cmd_history.len() == 0 {
                                             complete_cmd_history.push(complete_cmd.clone());
                                             *temp_hist = vec![complete_cmd.clone()];
