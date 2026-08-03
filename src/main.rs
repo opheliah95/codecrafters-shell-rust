@@ -389,7 +389,7 @@ fn main() -> Result<()> {
                                         if complete_cmd_history.len() > 0 {
                                             // remove registered cmd
                                             let filtered_cmd = complete_cmd_history
-                                                .into_iter()
+                                                .iter()
                                                 .filter(|cmd| cmd.cmd != complete_cmd.cmd)
                                                 .collect();
                                             *temp_hist = filtered_cmd;
