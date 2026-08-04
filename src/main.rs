@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use codecrafters_shell::solutions::{
     cd_path, check_file_extension, check_valid_path, find_exe_path_partial, find_files_in_pwd,
-    get_pwd, run_cmd, run_cmd_with_output, strip_trailing_nl,
+    get_pwd, run_cmd, run_cmd_with_output, strip_trailing_nl,handle_jobs
 };
 
 use codecrafters_shell::solutions::cmd::CompleteCmd;
@@ -300,6 +300,7 @@ impl ConditionalEventHandler for TabHandler {
 }
 
 fn main() -> Result<()> {
+    let mut job_id = 1;
     let mut complete_cmd_history: Vec<CompleteCmd> = Vec::new();
     let complete_history = Rc::new(RefCell::new(Vec::<CompleteCmd>::new()));
     let cached_complete_cmd = RefCell::new(String::new());
@@ -347,7 +348,6 @@ fn main() -> Result<()> {
                         cmd if *cmd == "exit" => std::process::exit(0),
                         cmd if *cmd == "cd" => cd_path(&args[1..]),
                         cmd if *cmd == "pwd" => get_pwd(),
-                        cmd if *cmd =="jobs" =>   stdout().flush().unwrap(),
                         cmd if *cmd == "type" => {
                             if ["echo", "exit", "type", "pwd", "complete", "jobs"]
                                 .contains(&args[1].as_str())
@@ -431,6 +431,10 @@ fn main() -> Result<()> {
                             }
                         }
                         _ => {
+                            if (args.len() == 3 && args.clone().last().unwrap() == "&") {
+                                //println!("args: {:?}", args);
+                                job_id = handle_jobs(args.clone(), job_id);
+                            }
                             if !run_cmd(&args) {
                                 println!("{}: command not found", input)
                             }

@@ -1,10 +1,9 @@
 pub mod solutions {
-    use core::error;
     use is_executable::IsExecutable;
     use std::env;
-    use std::io::{Error, ErrorKind, stdout};
+    use std::io::{Error, ErrorKind, Write, stdout};
     use std::path::{Path, PathBuf};
-    use std::process::Command;
+    use std::process::{Command,Stdio};
     pub mod cmd;
     use glob::glob;
     use regex::Regex;
@@ -515,13 +514,28 @@ pub mod solutions {
             .rev()
             .find(|(_, c)| !matches!(c, '\n' | '\r'))
             .map_or(0, |(i, _)| i + 1);
-        
-        
+
         if new_len != input.len() {
             input.truncate(new_len);
         }
 
         return input.to_string();
+    }
+
+    pub fn handle_jobs(args: Vec<String>, mut job_id:i32) -> i32 {
+        let last = args.last().unwrap();
+         let job = &args[0];
+            let param = &args[1];
+            let mut output = Command::new(job)
+                .arg(param)
+                .stdout(Stdio::piped())
+                .spawn()
+                .expect("error running cmd");
+            let pid = output.id();
+            println!("[{job_id}] {pid}");
+            job_id += 1;
+
+            return job_id;
     }
 
     // fn handle_complete_func(args: Vec<String> ){
