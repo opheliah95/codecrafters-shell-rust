@@ -348,6 +348,7 @@ fn main() -> Result<()> {
                         cmd if *cmd == "exit" => std::process::exit(0),
                         cmd if *cmd == "cd" => cd_path(&args[1..]),
                         cmd if *cmd == "pwd" => get_pwd(),
+                        cmd if *cmd == "jobs" => stdout().flush().unwrap(),
                         cmd if *cmd == "type" => {
                             if ["echo", "exit", "type", "pwd", "complete", "jobs"]
                                 .contains(&args[1].as_str())
