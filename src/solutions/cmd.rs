@@ -71,7 +71,7 @@ pub struct Job {
 
 impl Job {
     pub fn show_job (&self) {
-        let output = format!("[{}]+ {}                 {}", &self.pid, &self.status, &self.cmd);
+        let output = format!("[{}]+ {}                 {}", &self.num, &self.status, &self.cmd);
         println!("{output}");
     }
 }
