@@ -439,7 +439,7 @@ fn main() -> Result<()> {
                                 continue;
                             }
                             if !run_cmd(&args) {
-                                println!("{}: command not found", input)
+                                println!("{}: command not found", input);
                                 continue;
                             }
                         }
