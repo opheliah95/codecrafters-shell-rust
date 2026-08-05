@@ -11,6 +11,7 @@ pub mod solutions {
     use std::fs;
     use std::fs::File;
     use std::fs::metadata;
+    use std::mem;
 
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
@@ -533,6 +534,7 @@ pub mod solutions {
                 .expect("error running cmd");
             let pid = output.id();
             println!("[{job_id}] {pid}");
+            std::mem::forget(output); 
             job_id += 1;
 
             return job_id;
