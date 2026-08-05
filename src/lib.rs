@@ -523,8 +523,7 @@ pub mod solutions {
         return input.to_string();
     }
 
-    pub fn handle_jobs(args: Vec<String>, mut job_id: i32) -> i32 {
-        let last = args.last().unwrap();
+    pub fn handle_jobs(args: Vec<String>, mut job_id: i32) -> (i32, i32) {
         let job = &args[0];
         let param = &args[1];
         let mut child = Command::new(job)
@@ -543,7 +542,7 @@ pub mod solutions {
 
         job_id += 1;
 
-        return job_id;
+        return (job_id, pid);
     }
 
     // fn handle_complete_func(args: Vec<String> ){

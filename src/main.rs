@@ -4,7 +4,7 @@ use codecrafters_shell::solutions::{
     get_pwd, run_cmd, run_cmd_with_output, strip_trailing_nl,handle_jobs
 };
 
-use codecrafters_shell::solutions::cmd::CompleteCmd;
+use codecrafters_shell::solutions::cmd::{CompleteCmd, Job, JobList};
 
 use rustyline::completion::{Candidate, Completer};
 use rustyline::config::Configurer;
@@ -21,7 +21,7 @@ use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::HashSet;
 use std::fmt::format;
-use std::fs;
+use std::{fs, vec};
 use std::io::{Write, stdout};
 use std::process::Command;
 use std::rc::Rc;
@@ -300,6 +300,9 @@ impl ConditionalEventHandler for TabHandler {
 }
 
 fn main() -> Result<()> {
+    let mut job_list: JobList = JobList {
+        jobs: Vec::new()
+    };
     let mut job_id = 1;
     let mut complete_cmd_history: Vec<CompleteCmd> = Vec::new();
     let complete_history = Rc::new(RefCell::new(Vec::<CompleteCmd>::new()));
@@ -348,7 +351,7 @@ fn main() -> Result<()> {
                         cmd if *cmd == "exit" => std::process::exit(0),
                         cmd if *cmd == "cd" => cd_path(&args[1..]),
                         cmd if *cmd == "pwd" => get_pwd(),
-                        cmd if *cmd == "jobs" => stdout().flush().unwrap(),
+                        cmd if *cmd == "jobs" => job_list.list_jobs(),
                         cmd if *cmd == "type" => {
                             if ["echo", "exit", "type", "pwd", "complete", "jobs"]
                                 .contains(&args[1].as_str())
@@ -434,8 +437,15 @@ fn main() -> Result<()> {
                         _ => {
                             if (args.len() >= 3 && args.clone().last().unwrap() == "&") {
                                 //println!("args: {:?}", args);
-                                job_id = handle_jobs(args.clone(), job_id);
+                                let (job_id, p_id) = handle_jobs(args.clone(), job_id);
                                 stdout().flush().unwrap();
+                                let job = Job {
+                                    num: job_id,
+                                    pid: p_id,
+                                    status: "Running".to_string(),
+                                    cmd: args.join(" ")
+                                };
+                                job_list.add_job(job);
                                 continue;
                             }
                             if !run_cmd(&args) {

@@ -61,3 +61,32 @@ impl RegisteredCompleter {
             .expect("Completer Path Not Found");
     }
 }
+
+pub struct Job {
+    pub num: i32,
+    pub pid: i32, 
+    pub status: String,
+    pub cmd: String, 
+}
+
+impl Job {
+    pub fn show_job (&self) {
+        let output = format!("[{}]+ {}                 {}", &self.pid, &self.status, &self.cmd);
+        println!("{output}");
+    }
+}
+
+pub struct JobList {
+    pub jobs: Vec<Job>
+}
+
+impl JobList {
+    pub fn list_jobs(&self) {
+        for job in &self.jobs {
+            job.show_job();
+        }
+    }
+    pub fn add_job(&mut self, job: Job) {
+        self.jobs.push(job);
+    }
+}
