@@ -432,7 +432,7 @@ fn main() -> Result<()> {
                             }
                         }
                         _ => {
-                            if (args.len() == 3 && args.clone().last().unwrap() == "&") {
+                            if (args.len() >= 3 && args.clone().last().unwrap() == "&") {
                                 //println!("args: {:?}", args);
                                 job_id = handle_jobs(args.clone(), job_id);
                             }
