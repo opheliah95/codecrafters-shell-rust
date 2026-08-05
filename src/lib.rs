@@ -3,7 +3,7 @@ pub mod solutions {
     use std::env;
     use std::io::{Error, ErrorKind, Write, stdout};
     use std::path::{Path, PathBuf};
-    use std::process::{Command,Stdio};
+    use std::process::{Command, Stdio};
     pub mod cmd;
     use glob::glob;
     use regex::Regex;
@@ -523,21 +523,23 @@ pub mod solutions {
         return input.to_string();
     }
 
-    pub fn handle_jobs(args: Vec<String>, mut job_id:i32) -> i32 {
+    pub fn handle_jobs(args: Vec<String>, mut job_id: i32) -> i32 {
         let last = args.last().unwrap();
-         let job = &args[0];
-            let param = &args[1];
-            let mut output = Command::new(job)
-                .arg(param)
-                .stdout(Stdio::piped())
-                .spawn()
-                .expect("error running cmd");
-            let pid = output.id();
-            println!("[{job_id}] {pid}");
-            std::mem::forget(output); 
-            job_id += 1;
+        let job = &args[0];
+        let param = &args[1];
+        let mut output = Command::new(job)
+            .arg(param)
+            .stdin(Stdio::inherit())
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .spawn()
+            .expect("error running cmd");
+        let pid = output.id();
+        println!("[{job_id}] {pid}");
+        std::mem::forget(output);
+        job_id += 1;
 
-            return job_id;
+        return job_id;
     }
 
     // fn handle_complete_func(args: Vec<String> ){
