@@ -523,7 +523,7 @@ pub mod solutions {
         return input.to_string();
     }
 
-    pub fn handle_jobs(args: Vec<String>, mut job_id: i32) -> (i32, i32) {
+    pub fn handle_jobs(args: Vec<String>, mut job_id: i32) -> (i32, u32) {
         let job = &args[0];
         let param = &args[1];
         let mut child = Command::new(job)

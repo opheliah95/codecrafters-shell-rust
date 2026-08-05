@@ -64,7 +64,7 @@ impl RegisteredCompleter {
 
 pub struct Job {
     pub num: i32,
-    pub pid: i32, 
+    pub pid: u32, 
     pub status: String,
     pub cmd: String, 
 }
