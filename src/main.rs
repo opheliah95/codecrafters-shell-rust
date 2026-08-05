@@ -437,15 +437,18 @@ fn main() -> Result<()> {
                         _ => {
                             if (args.len() >= 3 && args.clone().last().unwrap() == "&") {
                                 //println!("args: {:?}", args);
-                                let (job_id, p_id) = handle_jobs(args.clone(), job_id);
+                                let (job_id_temp, p_id) = handle_jobs(args.clone(), job_id);
                                 stdout().flush().unwrap();
+                                
                                 let job = Job {
                                     num: job_id,
                                     pid: p_id,
                                     status: "Running".to_string(),
                                     cmd: args.join(" ")
                                 };
+                                
                                 job_list.add_job(job);
+                                job_id = job_id_temp;
                                 continue;
                             }
                             if !run_cmd(&args) {
