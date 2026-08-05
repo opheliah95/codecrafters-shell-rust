@@ -527,16 +527,20 @@ pub mod solutions {
         let last = args.last().unwrap();
         let job = &args[0];
         let param = &args[1];
-        let mut output = Command::new(job)
+        let mut child = Command::new(job)
             .arg(param)
             .stdin(Stdio::inherit())
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
             .spawn()
             .expect("error running cmd");
-        let pid = output.id();
+        let pid = child.id();
         println!("[{job_id}] {pid}");
-        std::mem::forget(output);
+        //std::mem::forget(output);
+        std::thread::spawn(move || {
+            let _ = child.wait();
+        });
+
         job_id += 1;
 
         return job_id;
