@@ -62,17 +62,23 @@ impl RegisteredCompleter {
     }
 }
 
+#[derive(Clone)]
 pub struct Job {
     pub num: i32,
     pub pid: u32, 
     pub status: String,
     pub cmd: String, 
+    pub marker: String
 }
 
 impl Job {
     pub fn show_job (&self) {
-        let output = format!("[{}]+  {}                 {}", &self.num, &self.status, &self.cmd);
+        let output = format!("[{}]{}  {}                 {}", &self.num, &self.marker, &self.status, &self.cmd);
         println!("{output}");
+    }
+
+     pub fn update_marker(&mut self, marker: String) {
+        self.marker = marker;
     }
 }
 
@@ -89,4 +95,29 @@ impl JobList {
     pub fn add_job(&mut self, job: Job) {
         self.jobs.push(job);
     }
+
+    pub fn sequence(&mut self) {
+        //println!("total jobs {}", self.jobs.len());
+        let mut last = self.jobs.clone().pop().unwrap();
+        last.update_marker("+".to_string());
+
+        if self.jobs.len() == 2 {
+            self.jobs[0].update_marker("-".to_string());
+            return;
+        }
+
+        if self.jobs.len() >= 3 {
+            
+            let last_len = self.jobs.len() - 2;
+            let last_sec = &mut self.jobs[last_len];
+            last_sec.update_marker("-".to_string());
+
+            for i in 0..last_len {
+                self.jobs[i].update_marker(" ".to_string());
+            }
+            return;
+        }
+
+    }
+
 }

@@ -444,10 +444,12 @@ fn main() -> Result<()> {
                                     num: job_id,
                                     pid: p_id,
                                     status: "Running".to_string(),
-                                    cmd: args.join(" ")
+                                    cmd: args.join(" "),
+                                    marker: "+".to_string()
                                 };
                                 
                                 job_list.add_job(job);
+                                job_list.sequence();
                                 job_id = job_id_temp;
                                 continue;
                             }
