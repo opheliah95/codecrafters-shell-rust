@@ -556,6 +556,9 @@ pub mod solutions {
                         let arg_str = args.join(" ");
                         let done_output =
                             format!("[{}]{}  {}                 {}", pid, "-", "Done", arg_str);
+                        
+                        let out_str = str::from_utf8(&output.stdout).unwrap();
+                        println!("{out_str}");
                         println!("{done_output}");
                     }
                 }
