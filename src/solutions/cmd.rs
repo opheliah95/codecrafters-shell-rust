@@ -78,14 +78,15 @@ impl Job {
     pub fn show_job(&mut self) {
         self.update_delete_counter();
         let current_status = self.status.lock().unwrap();
-        let mut new_cmd = &self.cmd[0..self.cmd.len() - 2].trim();
+        let mut new_cmd = self.cmd[0..self.cmd.len() - 2].trim().to_owned();
 
         //no & for finished command
         let finished = self.finished.lock().unwrap();
         if *finished {
             let mut new_cmd_clone  = new_cmd.clone();
-            let last_2_length= new_cmd_clone.to_owned().chars().rev().take(2).count();
-            new_cmd = new_cmd_clone.to_string().truncate(new_cmd_clone.len() - last_2_length).trim();
+            let last_2_length= new_cmd_clone.chars().rev().take(2).count();
+            new_cmd_clone.to_string().truncate(new_cmd_clone.len() - last_2_length);
+            new_cmd = new_cmd_clone.trim().to_owned();
         }
 
         let output = format!(
