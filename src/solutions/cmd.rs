@@ -1,5 +1,6 @@
 use std::process::{Command, Stdio};
 use std::io::{Read, BufReader};
+use std::sync::{Arc, Mutex};
 
 #[derive(Clone)]
 pub struct CompleteCmd {
@@ -66,14 +67,15 @@ impl RegisteredCompleter {
 pub struct Job {
     pub num: i32,
     pub pid: u32, 
-    pub status: String,
+    pub status: Arc<Mutex<String>>,
     pub cmd: String, 
     pub marker: String
 }
 
 impl Job {
     pub fn show_job (&self) {
-        let output = format!("[{}]{}  {}                 {}", &self.num, &self.marker, &self.status, &self.cmd);
+        let current_status = self.status.lock().unwrap();
+        let output = format!("[{}]{}  {}                 {}", &self.num, &self.marker, *current_status, &self.cmd);
         println!("{output}");
     }
 

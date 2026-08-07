@@ -11,7 +11,7 @@ pub mod solutions {
     use std::fs;
     use std::fs::File;
     use std::fs::metadata;
-    use std::mem;
+    use std::sync::{Arc, Mutex};
 
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
@@ -523,27 +523,43 @@ pub mod solutions {
         return input.to_string();
     }
 
-    pub fn handle_jobs(args: Vec<String>, mut job_id: i32) -> (i32, u32) {
-        let job = &args[0];
-        let param = &args[1];
-        let mut child = Command::new(job)
-            .arg(param)
-            .stdin(Stdio::inherit())
-            .stdout(Stdio::inherit())
-            .stderr(Stdio::inherit())
-            .spawn()
-            .expect("error running cmd");
-        let pid = child.id();
-        println!("[{job_id}] {pid}");
-        //std::mem::forget(output);
-        std::thread::spawn(move || {
-            let _ = child.wait();
-        });
+    pub fn handle_jobs(args: Vec<String>, job_id: i32) -> (i32, u32, Arc<Mutex<String>>) {
+    let job = &args[0];
+    let param = &args[1];
+    
+    let status = Arc::new(Mutex::new("Running".to_string()));
+    let status_clone = Arc::clone(&status);
 
-        job_id += 1;
+    let mut child = Command::new(job)
+        .arg(param)
+        .stdin(Stdio::inherit())
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
+        .spawn()
+        .expect("error running cmd");
+    
+    let pid = child.id();
+    println!("[{job_id}] {pid}");
 
-        return (job_id, pid);
-    }
+    // Spawn thread to update status when done
+    std::thread::spawn(move || {
+        match child.wait() {
+            Ok(_exit_status) => {
+                if let Ok(mut temp) = status_clone.lock() {
+                    *temp = "Done".to_string();
+                }
+            }
+            Err(e) => {
+                if let Ok(mut temp) = status_clone.lock() {
+                    *temp = format!("Error: {}", e);
+                }
+            }
+        }
+    });
+
+    // Return the lock immediately so the shell doesn't freeze
+    (job_id + 1, pid, status)
+}
 
     // fn handle_complete_func(args: Vec<String> ){
     //     match args.as_slice() {
