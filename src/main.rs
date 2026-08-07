@@ -355,10 +355,12 @@ fn main() -> Result<()> {
                             // check if joblist is empty
                             if job_list.jobs.len() == 0 {
                                 stdout().flush().unwrap();
+                                continue;
                             }
                             //remove finished jobs if shown then list all jobs
                             job_list.remove_job();
                             job_list.list_jobs();
+                            continue;
                         },
                         cmd if *cmd == "type" => {
                             if ["echo", "exit", "type", "pwd", "complete", "jobs"]
