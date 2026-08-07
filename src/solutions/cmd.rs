@@ -83,9 +83,11 @@ impl Job {
         //no & for finished command
         let finished = self.finished.lock().unwrap();
         if *finished {
-            let mut new_cmd_clone  = new_cmd.clone();
-            let last_2_length= new_cmd_clone.chars().rev().take(2).count();
-            new_cmd_clone.to_string().truncate(new_cmd_clone.len() - last_2_length);
+            let mut new_cmd_clone = new_cmd.clone();
+            let last_2_length = new_cmd_clone.chars().rev().take(2).count();
+            new_cmd_clone
+                .to_string()
+                .truncate(new_cmd_clone.len() - last_2_length);
             new_cmd = new_cmd_clone.trim().to_owned();
         }
 
@@ -141,6 +143,11 @@ impl JobList {
     }
 
     pub fn sequence(&mut self) {
+        // return if 0 value
+        if self.jobs.len() == 0 {
+            return;
+        }
+
         //println!("total jobs {}", self.jobs.len());
         let mut last = self.jobs.clone().pop().unwrap();
         last.update_marker("+".to_string());
