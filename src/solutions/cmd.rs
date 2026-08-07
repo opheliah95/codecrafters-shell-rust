@@ -142,6 +142,12 @@ impl JobList {
         let mut last = self.jobs.clone().pop().unwrap();
         last.update_marker("+".to_string());
 
+        // when there is only one job
+        if self.jobs.len() == 1 {
+            self.jobs[0].update_marker("+".to_string());
+            return;
+        }
+
         if self.jobs.len() == 2 {
             self.jobs[0].update_marker("-".to_string());
             return;
