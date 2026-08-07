@@ -75,7 +75,8 @@ pub struct Job {
 impl Job {
     pub fn show_job (&self) {
         let current_status = self.status.lock().unwrap();
-        let output = format!("[{}]{}  {}                 {}", &self.num, &self.marker, *current_status, &self.cmd);
+        let new_cmd = &self.cmd[0..self.cmd.len()-2].trim();
+        let output = format!("[{}]{}  {}                 {}", &self.num, &self.marker, *current_status, new_cmd);
         println!("{output}");
     }
 
