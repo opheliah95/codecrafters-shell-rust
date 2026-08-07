@@ -351,7 +351,11 @@ fn main() -> Result<()> {
                         cmd if *cmd == "exit" => std::process::exit(0),
                         cmd if *cmd == "cd" => cd_path(&args[1..]),
                         cmd if *cmd == "pwd" => get_pwd(),
-                        cmd if *cmd == "jobs" => job_list.list_jobs(),
+                        cmd if *cmd == "jobs" => {
+                            //remove finished jobs if shown then list all jobs
+                            job_list.remove_job();
+                            job_list.list_jobs();
+                        },
                         cmd if *cmd == "type" => {
                             if ["echo", "exit", "type", "pwd", "complete", "jobs"]
                                 .contains(&args[1].as_str())
@@ -437,7 +441,7 @@ fn main() -> Result<()> {
                         _ => {
                             if (args.len() >= 3 && args.clone().last().unwrap() == "&") {
                                 //println!("args: {:?}", args);
-                                let (job_id_temp, p_id, status) = handle_jobs(args.clone(), job_id);
+                                let (job_id_temp, p_id, status, finished) = handle_jobs(args.clone(), job_id);
                                 stdout().flush().unwrap();
                                 
                                 let job = Job {
@@ -445,7 +449,9 @@ fn main() -> Result<()> {
                                     pid: p_id,
                                     status: status,
                                     cmd: args.join(" "),
-                                    marker: "+".to_string()
+                                    marker: "+".to_string(),
+                                    finished: finished,
+                                    delete_counter: 0
                                 };
                                 
                                 job_list.add_job(job);

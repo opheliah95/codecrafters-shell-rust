@@ -523,12 +523,14 @@ pub mod solutions {
         return input.to_string();
     }
 
-    pub fn handle_jobs(args: Vec<String>, job_id: i32) -> (i32, u32, Arc<Mutex<String>>) {
+    pub fn handle_jobs(args: Vec<String>, job_id: i32) -> (i32, u32, Arc<Mutex<String>>, Arc<Mutex<bool>>) {
     let job = &args[0];
     let param = &args[1];
     
     let status = Arc::new(Mutex::new("Running".to_string()));
     let status_clone = Arc::clone(&status);
+    let finished = Arc::new(Mutex::new(false));
+    let finished_clone = Arc::clone(&finished);
 
     let mut child = Command::new(job)
         .arg(param)
@@ -548,6 +550,9 @@ pub mod solutions {
                 if let Ok(mut temp) = status_clone.lock() {
                     *temp = "Done".to_string();
                 }
+                if let Ok(mut finish_temp) = finished_clone.lock() {
+                    *finish_temp = true;
+                }
             }
             Err(e) => {
                 if let Ok(mut temp) = status_clone.lock() {
@@ -558,7 +563,7 @@ pub mod solutions {
     });
 
     // Return the lock immediately so the shell doesn't freeze
-    (job_id + 1, pid, status)
+    (job_id + 1, pid, status, finished)
 }
 
     // fn handle_complete_func(args: Vec<String> ){

@@ -1,5 +1,5 @@
+use std::io::{BufReader, Read};
 use std::process::{Command, Stdio};
-use std::io::{Read, BufReader};
 use std::sync::{Arc, Mutex};
 
 #[derive(Clone)]
@@ -66,37 +66,63 @@ impl RegisteredCompleter {
 #[derive(Clone)]
 pub struct Job {
     pub num: i32,
-    pub pid: u32, 
+    pub pid: u32,
     pub status: Arc<Mutex<String>>,
-    pub cmd: String, 
-    pub marker: String
+    pub cmd: String,
+    pub marker: String,
+    pub finished: Arc<Mutex<bool>>,
+    pub delete_counter: i32,
 }
 
 impl Job {
-    pub fn show_job (&self) {
+    pub fn show_job(&mut self) {
+        self.update_delete_counter();
         let current_status = self.status.lock().unwrap();
-        let new_cmd = &self.cmd[0..self.cmd.len()-2].trim();
-        let output = format!("[{}]{}  {}                 {}", &self.num, &self.marker, *current_status, new_cmd);
+        let new_cmd = &self.cmd[0..self.cmd.len() - 2].trim();
+        let output = format!(
+            "[{}]{}  {}                 {}",
+            &self.num, &self.marker, *current_status, new_cmd
+        );
         println!("{output}");
     }
 
-     pub fn update_marker(&mut self, marker: String) {
+    pub fn update_marker(&mut self, marker: String) {
         self.marker = marker;
+    }
+
+    pub fn update_delete_counter(&mut self) {
+        let finished = self.finished.lock().unwrap();
+        if *finished {
+            self.delete_counter += 1;
+            return;
+        }
     }
 }
 
 pub struct JobList {
-    pub jobs: Vec<Job>
+    pub jobs: Vec<Job>,
 }
 
 impl JobList {
-    pub fn list_jobs(&self) {
-        for job in &self.jobs {
+    pub fn list_jobs(&mut self) {
+        for job in &mut self.jobs {
             job.show_job();
         }
     }
     pub fn add_job(&mut self, job: Job) {
         self.jobs.push(job);
+    }
+
+    pub fn remove_job(&mut self) {
+        self.jobs.retain(|job| {
+            // Lock the mutex to check the condition
+            let finished = job.finished.lock().unwrap();
+            let is_finished = *finished;
+            // Drop the lock
+            drop(finished);
+
+            !(is_finished && job.delete_counter >= 1)
+        });
     }
 
     pub fn sequence(&mut self) {
@@ -110,7 +136,6 @@ impl JobList {
         }
 
         if self.jobs.len() >= 3 {
-            
             let last_len = self.jobs.len() - 2;
             let last_sec = &mut self.jobs[last_len];
             last_sec.update_marker("-".to_string());
@@ -120,7 +145,5 @@ impl JobList {
             }
             return;
         }
-
     }
-
 }
