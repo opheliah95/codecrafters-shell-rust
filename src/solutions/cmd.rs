@@ -124,6 +124,9 @@ impl JobList {
     }
 
     pub fn remove_job(&mut self) {
+        if self.jobs.len() == 0 {
+            return;
+        }
         self.jobs.retain(|job| {
             // Lock the mutex to check the condition
             let finished = job.finished.lock().unwrap();
