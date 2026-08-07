@@ -133,6 +133,8 @@ impl JobList {
 
             !(is_finished && job.delete_counter >= 1)
         });
+
+        self.sequence(); //re-order the jobs
     }
 
     pub fn sequence(&mut self) {
