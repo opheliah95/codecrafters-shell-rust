@@ -523,32 +523,41 @@ pub mod solutions {
         return input.to_string();
     }
 
-    pub fn handle_jobs(args: Vec<String>, job_id: i32) -> (i32, u32, Arc<Mutex<String>>, Arc<Mutex<bool>>) {
-    let job = &args[0];
-    let param = &args[1];
-    
-    let status = Arc::new(Mutex::new("Running".to_string()));
-    let status_clone = Arc::clone(&status);
-    let finished = Arc::new(Mutex::new(false));
-    let finished_clone = Arc::clone(&finished);
+    pub fn handle_jobs(
+        args: Vec<String>,
+        job_id: i32,
+    ) -> (i32, u32, Arc<Mutex<String>>, Arc<Mutex<bool>>) {
+        let job = &args[0];
+        let param = &args[1];
 
-    let mut child = Command::new(job)
-        .arg(param)
-        .stdin(Stdio::inherit())
-        .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit())
-        .spawn()
-        .expect("error running cmd");
-    
-    let pid = child.id();
-    println!("[{job_id}] {pid}");
+        let status = Arc::new(Mutex::new("Running".to_string()));
+        let status_clone = Arc::clone(&status);
+        let finished = Arc::new(Mutex::new(false));
+        let finished_clone = Arc::clone(&finished);
 
-    // Spawn thread to update status when done
-    std::thread::spawn(move || {
-        match child.wait() {
+        let mut child = Command::new(job)
+            .arg(param)
+            .stdin(Stdio::inherit())
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .spawn()
+            .expect("error running cmd");
+
+        let pid = child.id();
+        println!("[{job_id}] {pid}");
+
+        // Spawn thread to update status when done
+        std::thread::spawn(move || match child.wait() {
             Ok(_exit_status) => {
                 if let Ok(mut temp) = status_clone.lock() {
                     *temp = "Done".to_string();
+                    let output = child.wait_with_output().unwrap();
+                    if output.status.success() {
+                        let arg_str = args.join(" ");
+                        let done_output =
+                            format!("[{}]{}  {}                 {}", pid, "-", "Done", arg_str);
+                        println!("{done_output}");
+                    }
                 }
                 if let Ok(mut finish_temp) = finished_clone.lock() {
                     *finish_temp = true;
@@ -559,12 +568,11 @@ pub mod solutions {
                     *temp = format!("Error: {}", e);
                 }
             }
-        }
-    });
+        });
 
-    // Return the lock immediately so the shell doesn't freeze
-    (job_id + 1, pid, status, finished)
-}
+        // Return the lock immediately so the shell doesn't freeze
+        (job_id + 1, pid, status, finished)
+    }
 
     // fn handle_complete_func(args: Vec<String> ){
     //     match args.as_slice() {
