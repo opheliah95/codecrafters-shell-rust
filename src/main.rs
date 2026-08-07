@@ -352,6 +352,10 @@ fn main() -> Result<()> {
                         cmd if *cmd == "cd" => cd_path(&args[1..]),
                         cmd if *cmd == "pwd" => get_pwd(),
                         cmd if *cmd == "jobs" => {
+                            // check if joblist is empty
+                            if job_list.jobs.len() == 0 {
+                                stdout().flush().unwrap();
+                            }
                             //remove finished jobs if shown then list all jobs
                             job_list.remove_job();
                             job_list.list_jobs();
