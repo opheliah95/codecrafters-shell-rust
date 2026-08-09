@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use codecrafters_shell::solutions::{
     cd_path, check_file_extension, check_valid_path, find_exe_path_partial, find_files_in_pwd,
-    get_pwd, run_cmd, run_cmd_with_output, strip_trailing_nl,handle_jobs
+    get_pwd, handle_jobs, run_cmd, run_cmd_with_output, strip_trailing_nl,
 };
 
 use codecrafters_shell::solutions::cmd::{CompleteCmd, Job, JobList};
@@ -21,11 +21,11 @@ use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::HashSet;
 use std::fmt::format;
-use std::{fs, vec};
 use std::io::{Write, stdout};
 use std::process::Command;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
+use std::{fs, vec};
 
 #[derive(Clone, Helper, Validator, Highlighter)]
 struct MyHelper {
@@ -305,13 +305,13 @@ fn main() -> Result<()> {
     //let last_finished_job_clone = Arc::clone(&last_finished_job);
     let mut job_list: JobList = JobList {
         jobs: Vec::new(),
-        last_finished_job: last_finished_job
+        last_finished_job: last_finished_job,
     };
     let mut job_id = 1;
     let mut complete_cmd_history: Vec<CompleteCmd> = Vec::new();
     let complete_history = Rc::new(RefCell::new(Vec::<CompleteCmd>::new()));
     let cached_complete_cmd = RefCell::new(String::new());
-    
+
     let mut h = MyHelper {
         tab_pressed: Cell::new(0),
         past_cursor_pos: Cell::new(0),
@@ -329,9 +329,6 @@ fn main() -> Result<()> {
                 let mut input = String::new();
                 input = line.trim().to_string();
                 let mut args = shellwords::split(&input).unwrap();
-                
-                // print last known job
-                job_list.display_last_job();
 
                 if args.len() >= 1 {
                     let output = ["1>", ">", "2>", ">>", "1>>", "2>>"];
@@ -369,7 +366,7 @@ fn main() -> Result<()> {
                             job_list.remove_job();
                             job_list.list_jobs();
                             continue;
-                        },
+                        }
                         cmd if *cmd == "type" => {
                             if ["echo", "exit", "type", "pwd", "complete", "jobs"]
                                 .contains(&args[1].as_str())
@@ -407,16 +404,18 @@ fn main() -> Result<()> {
 
                                             found_cmd.run_complete();
                                         }
-                                    },
+                                    }
                                     "-r" => {
                                         //println!("-r cmd");
                                         if complete_cmd_history.len() > 0 {
                                             // remove registered cmd
                                             //println!("start filtered cmd: {}", complete_cmd_history.len());
-                                            let filtered_cmd: Vec<CompleteCmd> = complete_cmd_history
-                                                .iter()
-                                                .filter(|cmd| cmd.cmd != complete_cmd.cmd)
-                                                .cloned().collect();
+                                            let filtered_cmd: Vec<CompleteCmd> =
+                                                complete_cmd_history
+                                                    .iter()
+                                                    .filter(|cmd| cmd.cmd != complete_cmd.cmd)
+                                                    .cloned()
+                                                    .collect();
                                             //println!("filtered cmd: {}", filtered_cmd.len());
                                             *temp_hist = filtered_cmd.clone();
                                             complete_cmd_history = filtered_cmd;
@@ -427,7 +426,7 @@ fn main() -> Result<()> {
                                                 "complete: {last_arg}: no completion specification"
                                             )
                                         }
-                                    },
+                                    }
                                     "-C" => {
                                         let path = args[2].as_str();
                                         complete_cmd.set_cmd(last_arg.to_string());
@@ -456,7 +455,8 @@ fn main() -> Result<()> {
                             if (args.len() >= 3 && args.clone().last().unwrap() == "&") {
                                 //println!("args: {:?}", args);
                                 let arc_for_thread = Arc::clone(&job_list.last_finished_job);
-                                let (job_id_temp, p_id, status, finished) = handle_jobs(args.clone(), job_id, arc_for_thread );
+                                let (job_id_temp, p_id, status, finished) =
+                                    handle_jobs(args.clone(), job_id, arc_for_thread);
                                 stdout().flush().unwrap();
                                 // let job_val = finished_job.lock().unwrap();
                                 // let mut job_dest_guard = last_finished_job_clone.lock().unwrap();
@@ -469,9 +469,9 @@ fn main() -> Result<()> {
                                     cmd: args.join(" "),
                                     marker: "+".to_string(),
                                     finished: finished,
-                                    delete_counter: 0
+                                    delete_counter: 0,
                                 };
-                                
+
                                 job_list.add_job(job);
                                 job_list.sequence();
                                 job_id = job_id_temp;
@@ -481,6 +481,8 @@ fn main() -> Result<()> {
                                 println!("{}: command not found", input);
                                 continue;
                             }
+                            // print last known job
+                            job_list.display_last_job();
                         }
                     }
                 }
