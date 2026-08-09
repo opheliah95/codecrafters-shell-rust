@@ -78,7 +78,7 @@ impl Job {
     pub fn show_job(&mut self) {
         self.update_delete_counter();
         let current_status = self.status.lock().unwrap();
-        let mut new_cmd = self.cmd[0..self.cmd.len() - 2].trim().to_owned();
+        let mut new_cmd = self.cmd.trim().to_owned();
 
         //no & for finished command
         let finished = self.finished.lock().unwrap();
