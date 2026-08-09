@@ -526,6 +526,7 @@ pub mod solutions {
     pub fn handle_jobs(
         args: Vec<String>,
         job_id: i32,
+        finished_job: Arc<Mutex<String>>
     ) -> (i32, u32, Arc<Mutex<String>>, Arc<Mutex<bool>>) {
         let job = &args[0];
         let param = &args[1];
@@ -534,6 +535,9 @@ pub mod solutions {
         let status_clone = Arc::clone(&status);
         let finished = Arc::new(Mutex::new(false));
         let finished_clone = Arc::clone(&finished);
+
+        // store finished job
+        let finished_job_clone = Arc::clone(&finished_job);
 
         let mut child = Command::new(job)
             .arg(param)
@@ -551,19 +555,32 @@ pub mod solutions {
             Ok(_exit_status) => {
                 if let Ok(mut temp) = status_clone.lock() {
                     *temp = "Done".to_string();
-                    let output = child.wait_with_output().unwrap();
-                    if output.status.success() {
-                        let arg_str = args.join(" ");
-                        let done_output =
-                            format!("[{}]{}  {}                 {}", pid, "-", "Done", arg_str);
-                        
-                        let out_str = str::from_utf8(&output.stdout).unwrap();
-                        println!("{out_str}");
-                        println!("{done_output}");
-                    }
                 }
                 if let Ok(mut finish_temp) = finished_clone.lock() {
                     *finish_temp = true;
+                }
+
+                if let Ok(mut finished_job_temp) = finished_job_clone.lock() {
+                      let output = child.wait_with_output().unwrap();
+                      //println!("{}", output.status);
+                    if output.status.success() {
+                        let mut arg_str = args.clone().join(" ");
+                        arg_str.pop();
+                        let done_output =
+                            format!("[{}]{}  {}                 {}", job_id, "+", "Done", arg_str.trim());
+                        
+                        let out_str = str::from_utf8(&output.stdout).unwrap();
+                         *finished_job_temp = done_output;
+                        //println!("inside exit: {done_output}");
+                        // no output just return str
+                        // if (out_str.len() == 0) {
+                        //     *finished_job_temp = done_output;
+                        // } else {
+                        //     *finished_job_temp = format!("{out_str}\n{done_output}");
+                        // }
+                        
+                       
+                    }
                 }
             }
             Err(e) => {

@@ -113,9 +113,23 @@ impl Job {
 
 pub struct JobList {
     pub jobs: Vec<Job>,
+    pub last_finished_job: Arc<Mutex<String>>,
 }
 
 impl JobList {
+    pub fn display_last_job(&mut self) {
+        let mut finished_job = self.last_finished_job.lock().unwrap();
+        let has_finished = self.jobs.iter().any(|job| {
+            let finished = job.finished.lock().unwrap();
+            *finished
+        });
+        if finished_job.len() > 0 && has_finished {
+            println!("{finished_job}");
+        }
+        *finished_job = "".to_string();
+        drop(finished_job);
+        self.remove_job();
+    }
     pub fn list_jobs(&mut self) {
         for job in &mut self.jobs {
             job.show_job();
