@@ -566,7 +566,7 @@ pub mod solutions {
                       let output = child.wait_with_output().unwrap();
                       //println!("{}", output.status);
                     if output.status.success() {
-                        let mut arg_str = args.clone().join(" ").trim().to_string();
+                        let mut arg_str = args[0..args.len()-1].join(" ").trim().to_string();
                         arg_str.pop();
                         let done_output =
                             format!("[{}]{}  {}                 {}", job_id, "+", "Done", arg_str.trim());
