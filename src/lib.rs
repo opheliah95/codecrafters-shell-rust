@@ -569,7 +569,7 @@ pub mod solutions {
                         let mut arg_str = args.clone().join(" ");
                         arg_str.pop();
                         let done_output =
-                            format!("[{}]{}  {}                 {}", job_id, "-", "Done", arg_str.trim());
+                            format!("[{}]{}  {}                 {}", job_id, "+", "Done", arg_str.trim());
                         
                         let out_str = str::from_utf8(&output.stdout).unwrap();
                          *finished_job_temp = done_output;
