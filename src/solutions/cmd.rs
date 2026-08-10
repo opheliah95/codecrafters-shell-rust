@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::io::{BufReader, Read};
 use std::process::{Command, Stdio};
 use std::sync::{Arc, Mutex};
@@ -65,7 +66,7 @@ impl RegisteredCompleter {
 
 #[derive(Clone)]
 pub struct Job {
-    pub num: i32,
+    pub num: u32,
     pub pid: u32,
     pub status: Arc<Mutex<String>>,
     pub cmd: String,
@@ -95,7 +96,10 @@ impl Job {
 
         let output = format!(
             "[{}]{}  {}                 {}",
-            &self.num, &self.marker, *current_status, new_cmd.trim()
+            &self.num,
+            &self.marker,
+            *current_status,
+            new_cmd.trim()
         );
         println!("{output}");
     }
@@ -116,10 +120,33 @@ impl Job {
 pub struct JobList {
     pub jobs: Vec<Job>,
     pub last_finished_job: Arc<Mutex<String>>,
-    pub last_job_pid: Arc<Mutex<u32>>
+    pub last_job_pid: Arc<Mutex<u32>>,
+    //unused job id
+    pub discarded_pid: Vec<u32>,
 }
 
 impl JobList {
+    // assign unused job id -> u32
+    pub fn assign_unused_id(&mut self, id: u32) {
+        self.discarded_pid.push(id)
+    }
+    // add unused job id -> u32
+    pub fn remove_unused_id(&mut self, id: u32) {
+        self.discarded_pid.retain(|old_id| *old_id != id)
+    }
+
+    // return smallest id
+    pub fn return_smallest_id(&mut self) -> u32 {
+        if self.discarded_pid.len() == 0 {
+            return 0;
+        }
+            
+        self.discarded_pid.sort();
+        let initial = self.discarded_pid[0];
+        self.remove_unused_id(initial);
+        return initial;
+    }
+
     pub fn display_last_job(&mut self) {
         let mut finished_job = self.last_finished_job.lock().unwrap();
         let has_finished = self.jobs.iter().any(|job| {
@@ -141,27 +168,47 @@ impl JobList {
     pub fn add_job(&mut self, job: Job) {
         self.jobs.push(job);
     }
-    pub fn remove_job_with_id (&mut self) {
+    pub fn remove_job_with_id(&mut self) {
         if self.jobs.len() == 0 {
             return;
         }
-        self.jobs.retain(|job|
-        {
-            let stored_job_id = self.last_job_pid.lock().unwrap();
-            job.pid != *stored_job_id
-        })
+
+        let stored_job_id = self.last_job_pid.lock().unwrap();
+
+        self.jobs.retain(|job| job.pid != *stored_job_id);
+
+        //remove id
+        let removed_id = *stored_job_id;
+        drop(stored_job_id);
+        self.assign_unused_id(removed_id);
     }
     pub fn remove_job(&mut self) {
         if self.jobs.len() == 0 {
+            self.assign_unused_id(1);
             return;
         }
+
+        let to_remove: Vec<u32> = self
+            .jobs
+            .iter()
+            .filter(|job| {
+                let finished = job.finished.lock().unwrap();
+                let is_finished = *finished;
+                *finished && job.delete_counter >= 1
+            })
+            .map(|job| job.num)
+            .collect();
+
+        for id in to_remove.into_iter() {
+            self.assign_unused_id(id);
+        }
+
         self.jobs.retain(|job| {
             // Lock the mutex to check the condition
             let finished = job.finished.lock().unwrap();
             let is_finished = *finished;
             // Drop the lock
             drop(finished);
-
             !(is_finished && job.delete_counter >= 1)
         });
 

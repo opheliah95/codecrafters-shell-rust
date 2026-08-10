@@ -525,10 +525,10 @@ pub mod solutions {
 
     pub fn handle_jobs(
         args: Vec<String>,
-        job_id: i32,
+        job_id: u32,
         finished_job: Arc<Mutex<String>>,
         finished_pid: Arc<Mutex<u32>>
-    ) -> (i32, u32, Arc<Mutex<String>>, Arc<Mutex<bool>>) {
+    ) -> (u32, u32, Arc<Mutex<String>>, Arc<Mutex<bool>>) {
         let job = &args[0];
         let param = &args[1];
 
