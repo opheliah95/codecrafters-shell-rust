@@ -84,16 +84,18 @@ impl Job {
         let finished = self.finished.lock().unwrap();
         if *finished {
             let mut new_cmd_clone = new_cmd.clone();
-            let last_2_length = new_cmd_clone.chars().rev().take(2).count();
-            new_cmd_clone
-                .to_string()
-                .truncate(new_cmd_clone.len() - last_2_length);
-            new_cmd = new_cmd_clone.trim().to_owned();
+            let amp_pos = new_cmd_clone.rfind("&").unwrap();
+            new_cmd = new_cmd_clone[0..amp_pos].to_string();
+            // let last_2_length = new_cmd_clone.chars().rev().take(2).count();
+            // new_cmd_clone
+            //     .to_string()
+            //     .truncate(new_cmd_clone.len() - last_2_length);
+            // new_cmd = new_cmd_clone.trim().to_owned();
         }
 
         let output = format!(
             "[{}]{}  {}                 {}",
-            &self.num, &self.marker, *current_status, new_cmd
+            &self.num, &self.marker, *current_status, new_cmd.trim()
         );
         println!("{output}");
     }
