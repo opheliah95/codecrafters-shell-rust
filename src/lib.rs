@@ -567,10 +567,11 @@ pub mod solutions {
                       //println!("{}", output.status);
                     if output.status.success() {
                         let mut arg_cloned = args.clone();
-                        let mut args_str = arg_cloned[0..args.len()].join(" ").trim().to_string();
-                        args_str.pop();
+                        let mut args_str = arg_cloned[0..args.len()].join(" ").trim().to_string();\
+                        let amp_post = args_str.rfind("&").unwrap();
+                        let str_result =&args_str[0..amp_post];
                         let done_output =
-                            format!("[{}]{}  {}                 {}", job_id, "+", "Done", args_str);
+                            format!("[{}]{}  {}                 {}", job_id, "+", "Done", str_result.trim());
                         
                         let out_str = str::from_utf8(&output.stdout).unwrap();
                          *finished_job_temp = done_output;
