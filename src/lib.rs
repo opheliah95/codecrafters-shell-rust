@@ -526,7 +526,8 @@ pub mod solutions {
     pub fn handle_jobs(
         args: Vec<String>,
         job_id: i32,
-        finished_job: Arc<Mutex<String>>
+        finished_job: Arc<Mutex<String>>,
+        finished_pid: Arc<Mutex<u32>>
     ) -> (i32, u32, Arc<Mutex<String>>, Arc<Mutex<bool>>) {
         let job = &args[0];
         let param = &args[1];
@@ -538,6 +539,7 @@ pub mod solutions {
 
         // store finished job
         let finished_job_clone = Arc::clone(&finished_job);
+        let finished_job_id_clone = Arc::clone(&finished_pid);
 
         let mut child = Command::new(job)
             .arg(param)
@@ -567,10 +569,11 @@ pub mod solutions {
                         let mut arg_str = args.clone().join(" ");
                         arg_str.pop();
                         let done_output =
-                            format!("[{}]{}  {}                 {}", job_id, "+", "Done", arg_str.trim());
+                            format!("[{}]{}  {}                 {}", job_id, "-", "Done", arg_str.trim());
                         
                         let out_str = str::from_utf8(&output.stdout).unwrap();
                          *finished_job_temp = done_output;
+                         
                         //println!("inside exit: {done_output}");
                         // no output just return str
                         // if (out_str.len() == 0) {
@@ -578,9 +581,13 @@ pub mod solutions {
                         // } else {
                         //     *finished_job_temp = format!("{out_str}\n{done_output}");
                         // }
+                         if let Ok(mut finished_job_id_temp) = finished_job_id_clone.lock() {
+                            *finished_job_id_temp = pid;
+                          }
                         
                        
                     }
+                    
                 }
             }
             Err(e) => {

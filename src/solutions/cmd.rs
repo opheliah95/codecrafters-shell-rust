@@ -114,6 +114,7 @@ impl Job {
 pub struct JobList {
     pub jobs: Vec<Job>,
     pub last_finished_job: Arc<Mutex<String>>,
+    pub last_job_pid: Arc<Mutex<u32>>
 }
 
 impl JobList {
@@ -128,7 +129,7 @@ impl JobList {
         }
         *finished_job = "".to_string();
         drop(finished_job);
-        self.remove_job();
+        self.remove_job_with_id();
     }
     pub fn list_jobs(&mut self) {
         for job in &mut self.jobs {
@@ -138,7 +139,16 @@ impl JobList {
     pub fn add_job(&mut self, job: Job) {
         self.jobs.push(job);
     }
-
+    pub fn remove_job_with_id (&mut self) {
+        if self.jobs.len() == 0 {
+            return;
+        }
+        self.jobs.retain(|job|
+        {
+            let stored_job_id = self.last_job_pid.lock().unwrap();
+            job.pid != *stored_job_id
+        })
+    }
     pub fn remove_job(&mut self) {
         if self.jobs.len() == 0 {
             return;

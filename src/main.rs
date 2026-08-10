@@ -302,10 +302,12 @@ impl ConditionalEventHandler for TabHandler {
 
 fn main() -> Result<()> {
     let last_finished_job = Arc::new(Mutex::new("".to_string()));
+    let last_finished_job_id = Arc::new(Mutex::new(0));
     //let last_finished_job_clone = Arc::clone(&last_finished_job);
     let mut job_list: JobList = JobList {
         jobs: Vec::new(),
         last_finished_job: last_finished_job,
+        last_job_pid: last_finished_job_id
     };
     let mut job_id = 1;
     let mut complete_cmd_history: Vec<CompleteCmd> = Vec::new();
@@ -455,8 +457,9 @@ fn main() -> Result<()> {
                             if (args.len() >= 3 && args.clone().last().unwrap() == "&") {
                                 //println!("args: {:?}", args);
                                 let arc_for_thread = Arc::clone(&job_list.last_finished_job);
+                                let arc_for_pid = Arc::clone(&job_list.last_job_pid);
                                 let (job_id_temp, p_id, status, finished) =
-                                    handle_jobs(args.clone(), job_id, arc_for_thread);
+                                    handle_jobs(args.clone(), job_id, arc_for_thread, arc_for_pid);
                                 stdout().flush().unwrap();
                                 // let job_val = finished_job.lock().unwrap();
                                 // let mut job_dest_guard = last_finished_job_clone.lock().unwrap();
