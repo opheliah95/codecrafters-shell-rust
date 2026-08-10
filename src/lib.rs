@@ -566,11 +566,11 @@ pub mod solutions {
                       let output = child.wait_with_output().unwrap();
                       //println!("{}", output.status);
                     if output.status.success() {
-                        let mut arg_str = args[0..args.len()-1].join(" ").trim().to_string();
-                        let mut args_cloned = arg_str;
+                        let mut arg_cloned = args.clone();
+                        let mut args_str = arg_cloned[0..args.len()-1].join(" ").trim().to_string();
                         args_cloned.pop();
                         let done_output =
-                            format!("[{}]{}  {}                 {}", job_id, "+", "Done", args_cloned.trim());
+                            format!("[{}]{}  {}                 {}", job_id, "+", "Done", args_str);
                         
                         let out_str = str::from_utf8(&output.stdout).unwrap();
                          *finished_job_temp = done_output;
