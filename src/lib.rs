@@ -567,7 +567,7 @@ pub mod solutions {
                       //println!("{}", output.status);
                     if output.status.success() {
                         let mut arg_cloned = args.clone();
-                        let mut args_str = arg_cloned[0..args.len()].join(" ").trim().to_string();\
+                        let mut args_str = arg_cloned[0..args.len()].join(" ").trim().to_string();
                         let amp_post = args_str.rfind("&").unwrap();
                         let str_result =&args_str[0..amp_post];
                         let done_output =
