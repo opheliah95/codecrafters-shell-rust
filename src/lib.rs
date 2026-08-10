@@ -568,7 +568,7 @@ pub mod solutions {
                     if output.status.success() {
                         let mut arg_cloned = args.clone();
                         let mut args_str = arg_cloned[0..args.len()-1].join(" ").trim().to_string();
-                        args_cloned.pop();
+                        args_str.pop();
                         let done_output =
                             format!("[{}]{}  {}                 {}", job_id, "+", "Done", args_str);
                         
