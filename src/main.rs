@@ -308,7 +308,7 @@ fn main() -> Result<()> {
         jobs: Vec::new(),
         last_finished_job: last_finished_job,
         last_job_pid: last_finished_job_id,
-        discarded_pid: Vec::new(),
+        discarded_pid: HashSet::new(),
     };
     let mut job_id = 1;
     let mut complete_cmd_history: Vec<CompleteCmd> = Vec::new();
@@ -354,6 +354,14 @@ fn main() -> Result<()> {
                         run_cmd_with_output(args.clone(), file_dir[0].to_string(), operator);
                         continue;
                     }
+
+                    // clear job
+                    let unused_id = job_list.return_smallest_id();
+                    //let mut temp_id = job_id_temp;
+                    //println!("smallest id: {unused_id}");
+                    if unused_id != 0 {
+                        job_id = unused_id;
+                    }
                     match &args[0] {
                         cmd if cmd.len() == 0 => continue,
                         cmd if *cmd == "exit" => std::process::exit(0),
@@ -374,7 +382,8 @@ fn main() -> Result<()> {
                             if ["echo", "exit", "type", "pwd", "complete", "jobs"]
                                 .contains(&args[1].as_str())
                             {
-                                println!("{} is a shell builtin", &args[1])
+                                println!("{} is a shell builtin", &args[1]);
+                                job_list.display_last_job();
                             } else {
                                 check_valid_path(&args);
                             }
@@ -457,16 +466,16 @@ fn main() -> Result<()> {
                         _ => {
                             if (args.len() >= 3 && args.clone().last().unwrap() == "&") {
                                 //println!("args: {:?}", args);
+                                //check if any job has finished
+                                //job_list.remove_job();
+
                                 let arc_for_thread = Arc::clone(&job_list.last_finished_job);
                                 let arc_for_pid = Arc::clone(&job_list.last_job_pid);
-                                let (job_id_temp, mut p_id, status, finished) =
+                                let (job_id_temp, p_id, status, finished) =
                                     handle_jobs(args.clone(), job_id, arc_for_thread, arc_for_pid);
                                 stdout().flush().unwrap();
 
-                                let unused_id = job_list.return_smallest_id();
-                                if unused_id != 0 {
-                                    p_id = unused_id;
-                                }
+                                //println!("temp is {temp_id}");
 
                                 let job = Job {
                                     num: job_id,

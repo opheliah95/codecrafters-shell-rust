@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::HashSet;
 use std::io::{BufReader, Read};
 use std::process::{Command, Stdio};
 use std::sync::{Arc, Mutex};
@@ -122,13 +122,15 @@ pub struct JobList {
     pub last_finished_job: Arc<Mutex<String>>,
     pub last_job_pid: Arc<Mutex<u32>>,
     //unused job id
-    pub discarded_pid: Vec<u32>,
+    pub discarded_pid: HashSet<u32>,
 }
 
 impl JobList {
     // assign unused job id -> u32
     pub fn assign_unused_id(&mut self, id: u32) {
-        self.discarded_pid.push(id)
+        if !self.discarded_pid.contains(&id) {
+            self.discarded_pid.insert(id);
+        }
     }
     // add unused job id -> u32
     pub fn remove_unused_id(&mut self, id: u32) {
@@ -140,9 +142,11 @@ impl JobList {
         if self.discarded_pid.len() == 0 {
             return 0;
         }
-            
-        self.discarded_pid.sort();
-        let initial = self.discarded_pid[0];
+
+        let mut discarded_id_vec: Vec<u32> = self.discarded_pid.iter().cloned().collect();
+        //println!("discarded id {:?}", self.discarded_pid);
+        discarded_id_vec.sort();
+        let initial = discarded_id_vec[0];
         self.remove_unused_id(initial);
         return initial;
     }
@@ -168,20 +172,33 @@ impl JobList {
     pub fn add_job(&mut self, job: Job) {
         self.jobs.push(job);
     }
+
+    // remove finished job
     pub fn remove_job_with_id(&mut self) {
         if self.jobs.len() == 0 {
+            self.assign_unused_id(1);
             return;
         }
-
         let stored_job_id = self.last_job_pid.lock().unwrap();
-
-        self.jobs.retain(|job| job.pid != *stored_job_id);
-
         //remove id
-        let removed_id = *stored_job_id;
-        drop(stored_job_id);
-        self.assign_unused_id(removed_id);
+        let job_to_remove = self.jobs.iter().find(|job| {
+            let finished = job.finished.lock().unwrap();
+            (job.pid == *stored_job_id && *finished)
+        });
+
+        match job_to_remove {
+            Some(result) => {
+                let removed_id = result.num;
+                self.jobs.retain(|job| job.pid != *stored_job_id);
+
+                drop(stored_job_id);
+                //println!("id assigned: {}", removed_id);
+                self.assign_unused_id(removed_id);
+            }
+            None => return,
+        }
     }
+
     pub fn remove_job(&mut self) {
         if self.jobs.len() == 0 {
             self.assign_unused_id(1);
@@ -193,12 +210,12 @@ impl JobList {
             .iter()
             .filter(|job| {
                 let finished = job.finished.lock().unwrap();
-                let is_finished = *finished;
-                *finished && job.delete_counter >= 1
+                *finished
             })
             .map(|job| job.num)
             .collect();
 
+        //println!("to remove list is {:?}", to_remove);
         for id in to_remove.into_iter() {
             self.assign_unused_id(id);
         }
