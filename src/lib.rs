@@ -623,8 +623,10 @@ pub mod solutions {
         
         let mut second_out = second_pipe.stdout.expect("Error obtain child output");
         let mut buffer = String::new();
+        
         second_out.read_to_string(&mut buffer);
-        println!("{buffer}");
+        let improved_line = strip_trailing_nl(&mut buffer);
+        println!("{improved_line}");
     }
 
 
