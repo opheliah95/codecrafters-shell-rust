@@ -368,6 +368,7 @@ async fn main() -> Result<()> {
                     if args.contains(&"|".to_string()) {
                         let pipe_args: Vec<&[String]> = args.split(|c| c == "|").collect();
                         handle_dual_command(pipe_args);
+                        stdout().flush().unwrap();
                         continue;
                     }
 
