@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use codecrafters_shell::solutions::{
     cd_path, check_file_extension, check_valid_path, find_exe_path_partial, find_files_in_pwd,
-    get_pwd, handle_jobs, run_cmd, run_cmd_with_output, strip_trailing_nl,
+    get_pwd, handle_jobs, run_cmd, run_cmd_with_output, strip_trailing_nl,handle_dual_command
 };
 
 use codecrafters_shell::solutions::cmd::{CompleteCmd, Job, JobList};
@@ -21,11 +21,12 @@ use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::HashSet;
 use std::fmt::format;
-use std::io::{Write, stdout};
+use std::io::{Write, pipe, stdout};
 use std::process::Command;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::{fs, vec};
+use tokio;
 
 #[derive(Clone, Helper, Validator, Highlighter)]
 struct MyHelper {
@@ -299,8 +300,8 @@ impl ConditionalEventHandler for TabHandler {
         None
     }
 }
-
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let last_finished_job = Arc::new(Mutex::new("".to_string()));
     let last_finished_job_id = Arc::new(Mutex::new(0));
     //let last_finished_job_clone = Arc::clone(&last_finished_job);
@@ -362,6 +363,15 @@ fn main() -> Result<()> {
                     if unused_id != 0 {
                         job_id = unused_id;
                     }
+
+                    // handle pipes 
+                    if args.contains(&"|".to_string()) {
+                        let pipe_args: Vec<&[String]> = args.split(|c| c == "|").collect();
+                        handle_dual_command(pipe_args);
+                        continue;
+                    }
+
+
                     match &args[0] {
                         cmd if cmd.len() == 0 => continue,
                         cmd if *cmd == "exit" => std::process::exit(0),

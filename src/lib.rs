@@ -1,7 +1,7 @@
 pub mod solutions {
     use is_executable::IsExecutable;
     use std::env;
-    use std::io::{Error, ErrorKind, Write, stdout};
+    use std::io::{Error, ErrorKind, Read, Write, stdout};
     use std::path::{Path, PathBuf};
     use std::process::{Command, Stdio};
     pub mod cmd;
@@ -602,6 +602,32 @@ pub mod solutions {
         // Return the lock immediately so the shell doesn't freeze
         (job_id + 1, pid, status, finished)
     }
+
+    pub fn handle_dual_command(cmds: Vec<&[String]>) {
+        let first_cmd = cmds[0];
+        let second_cmd = cmds[1];
+        let main_pipe = Command::new(&first_cmd[0])
+                                    .args(&first_cmd[1..])
+                                    .stdout(Stdio::piped())
+                                    .spawn()
+                                    .expect("Failed to start sed process");
+       
+        let main_pipe_out = main_pipe.stdout.expect("Error fail to run main pipe");
+
+        let mut second_pipe = Command::new(&second_cmd[0])
+                                    .args(&second_cmd[1..])
+                                    .stdin(Stdio::from(main_pipe_out))
+                                    .stdout(Stdio::piped())
+                                    .spawn()
+                                    .expect("Failed to start sed process");
+        
+        let mut second_out = second_pipe.stdout.expect("Error obtain child output");
+        let mut buffer = String::new();
+        second_out.read_to_string(&mut buffer);
+        println!("{buffer}");
+    }
+
+
 
     // fn handle_complete_func(args: Vec<String> ){
     //     match args.as_slice() {
