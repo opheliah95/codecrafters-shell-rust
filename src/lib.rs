@@ -12,7 +12,6 @@ pub mod solutions {
     use std::fs::File;
     use std::fs::metadata;
     use std::sync::{Arc, Mutex};
-    use tokio::process;
 
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
@@ -607,7 +606,7 @@ pub mod solutions {
     pub async fn handle_dual_command(cmds: Vec<&[String]>) -> Result<String, Box<dyn std::error::Error>>  {
         let first_cmd = cmds[0];
         let second_cmd = cmds[1];
-        let mut main_pipe = process::Command::new(&first_cmd[0])
+        let mut main_pipe = tokio::process::Command::new(&first_cmd[0])
                                     .args(&first_cmd[1..])
                                     .stdout(Stdio::piped())
                                     .spawn()
@@ -616,7 +615,7 @@ pub mod solutions {
         let main_pipe_out:Stdio = main_pipe
                                         .stdout.take().unwrap().try_into().expect("Error fail to run main pipe");
         
-        let mut second_pipe = Command::new(&second_cmd[0])
+        let mut second_pipe = tokio::process::Command::new(&second_cmd[0])
                                     .args(&second_cmd[1..])
                                     .stdin(Stdio::from(main_pipe_out))
                                     .stdout(Stdio::piped())
