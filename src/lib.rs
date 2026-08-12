@@ -12,6 +12,7 @@ pub mod solutions {
     use std::fs::File;
     use std::fs::metadata;
     use std::sync::{Arc, Mutex};
+    use tokio::process;
 
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
@@ -603,17 +604,18 @@ pub mod solutions {
         (job_id + 1, pid, status, finished)
     }
 
-    pub fn handle_dual_command(cmds: Vec<&[String]>) {
+    pub async fn handle_dual_command(cmds: Vec<&[String]>) {
         let first_cmd = cmds[0];
         let second_cmd = cmds[1];
-        let main_pipe = Command::new(&first_cmd[0])
+        let mut main_pipe = process::Command::new(&first_cmd[0])
                                     .args(&first_cmd[1..])
                                     .stdout(Stdio::piped())
                                     .spawn()
                                     .expect("Failed to start sed process");
-       
-        let main_pipe_out = main_pipe.stdout.expect("Error fail to run main pipe");
-
+        
+        let main_pipe_out:Stdio = main_pipe
+                                        .stdout.take().unwrap().try_into().expect("Error fail to run main pipe");
+        
         let mut second_pipe = Command::new(&second_cmd[0])
                                     .args(&second_cmd[1..])
                                     .stdin(Stdio::from(main_pipe_out))
@@ -621,9 +623,12 @@ pub mod solutions {
                                     .spawn()
                                     .expect("Failed to start sed process");
         
-        let mut second_out = second_pipe.stdout.expect("Error obtain child output");
-        let mut buffer = String::new();
         
+        
+        let mut second_out = second_pipe.stdout.expect("Error obtain child output");
+        
+        //create buffer
+        let mut buffer = String::new();
         second_out.read_to_string(&mut buffer);
         let improved_line = strip_trailing_nl(&mut buffer);
         println!("{improved_line}");
