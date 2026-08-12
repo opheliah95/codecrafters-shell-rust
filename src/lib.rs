@@ -12,7 +12,7 @@ pub mod solutions {
     use std::fs::File;
     use std::fs::metadata;
     use std::sync::{Arc, Mutex};
-    use tokio::io::AsyncReadExt;;
+    use tokio::io::AsyncReadExt;
 
 
     pub fn type_impl(input: &str) {
