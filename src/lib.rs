@@ -617,7 +617,7 @@ pub mod solutions {
         let main_pipe_out:Stdio = main_pipe
                                         .stdout.take().unwrap().try_into().expect("Error fail to run main pipe");
         
-        let mut second_pipe = tokio::process::Command::new(&second_cmd[0])
+        let mut second_pipe = Command::new(&second_cmd[0])
                                     .args(&second_cmd[1..])
                                     .stdin(Stdio::from(main_pipe_out))
                                     .stdout(Stdio::piped())
