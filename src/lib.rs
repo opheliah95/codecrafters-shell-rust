@@ -12,6 +12,8 @@ pub mod solutions {
     use std::fs::File;
     use std::fs::metadata;
     use std::sync::{Arc, Mutex};
+    use tokio::io::AsyncBufReadExt;
+
 
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
@@ -625,7 +627,7 @@ pub mod solutions {
         
         
         let output = second_pipe.wait_with_output().await?;
-        
+        let _ = main_pipe.kill().await;
         if output.status.success() {
               let result = String::from_utf8_lossy(&output.stdout).to_string();
              Ok(strip_trailing_nl(&mut result.to_string()))
