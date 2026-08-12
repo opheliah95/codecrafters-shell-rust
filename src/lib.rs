@@ -624,15 +624,16 @@ pub mod solutions {
         
         
         
-        let mut second_out = second_pipe.stdout.expect("Error obtain child output");
+        let output = second_pipe.wait_with_output().await?;
         
-        //create buffer
-        let mut buffer = String::new();
-        second_out.read_to_string(&mut buffer);
-        let improved_line = strip_trailing_nl(&mut buffer);
-        println!("{improved_line}");
-
-        Ok(improved_line)
+        if output.status.success() {
+              let result = String::from_utf8_lossy(&output.stdout).to_string();
+             Ok(strip_trailing_nl(&mut result.to_string()))
+        } else {
+            Err(format!("Command failed to run with failed status {}", output.status).into())
+        }
+        
+        
     }
 
 
