@@ -613,6 +613,7 @@ pub mod solutions {
         let second_cmd = cmds[1];
         let mut main_pipe = tokio::process::Command::new(&first_cmd[0])
             .args(&first_cmd[1..])
+            .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .spawn()
             .expect("Failed to start sed process");
@@ -642,6 +643,7 @@ pub mod solutions {
         while let Ok(Some(line)) = reader.next_line().await {
             output.push_str(&line);
             output.push('\n');
+            println!("{line}");
 
             // If second_pipe has exited (e.g., head finished), break out early
             if let Ok(Some(_)) = second_pipe.try_wait() {
