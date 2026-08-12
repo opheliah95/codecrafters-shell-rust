@@ -12,8 +12,7 @@ pub mod solutions {
     use std::fs::File;
     use std::fs::metadata;
     use std::sync::{Arc, Mutex};
-    use tokio::io::AsyncReadExt;
-
+    use tokio::io::{AsyncBufReadExt, BufReader};
 
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
@@ -529,7 +528,7 @@ pub mod solutions {
         args: Vec<String>,
         job_id: u32,
         finished_job: Arc<Mutex<String>>,
-        finished_pid: Arc<Mutex<u32>>
+        finished_pid: Arc<Mutex<u32>>,
     ) -> (u32, u32, Arc<Mutex<String>>, Arc<Mutex<bool>>) {
         let job = &args[0];
         let param = &args[1];
@@ -565,19 +564,24 @@ pub mod solutions {
                 }
 
                 if let Ok(mut finished_job_temp) = finished_job_clone.lock() {
-                      let output = child.wait_with_output().unwrap();
-                      //println!("{}", output.status);
+                    let output = child.wait_with_output().unwrap();
+                    //println!("{}", output.status);
                     if output.status.success() {
                         let mut arg_cloned = args.clone();
                         let mut args_str = arg_cloned[0..args.len()].join(" ").trim().to_string();
                         let amp_post = args_str.rfind("&").unwrap();
-                        let str_result =&args_str[0..amp_post];
-                        let done_output =
-                            format!("[{}]{}  {}                 {}", job_id, "+", "Done", str_result.trim());
-                        
+                        let str_result = &args_str[0..amp_post];
+                        let done_output = format!(
+                            "[{}]{}  {}                 {}",
+                            job_id,
+                            "+",
+                            "Done",
+                            str_result.trim()
+                        );
+
                         let out_str = str::from_utf8(&output.stdout).unwrap();
-                         *finished_job_temp = done_output;
-                         
+                        *finished_job_temp = done_output;
+
                         //println!("inside exit: {done_output}");
                         // no output just return str
                         // if (out_str.len() == 0) {
@@ -585,13 +589,10 @@ pub mod solutions {
                         // } else {
                         //     *finished_job_temp = format!("{out_str}\n{done_output}");
                         // }
-                         if let Ok(mut finished_job_id_temp) = finished_job_id_clone.lock() {
+                        if let Ok(mut finished_job_id_temp) = finished_job_id_clone.lock() {
                             *finished_job_id_temp = pid;
-                          }
-                        
-                       
+                        }
                     }
-                    
                 }
             }
             Err(e) => {
@@ -605,45 +606,57 @@ pub mod solutions {
         (job_id + 1, pid, status, finished)
     }
 
-    pub async fn handle_dual_command(cmds: Vec<&[String]>) -> Result<String, Box<dyn std::error::Error>>  {
+    pub async fn handle_dual_command(
+        cmds: Vec<&[String]>,
+    ) -> Result<String, Box<dyn std::error::Error>> {
         let first_cmd = cmds[0];
         let second_cmd = cmds[1];
         let mut main_pipe = tokio::process::Command::new(&first_cmd[0])
-                                    .args(&first_cmd[1..])
-                                    .stdout(Stdio::piped())
-                                    .spawn()
-                                    .expect("Failed to start sed process");
-        
-        let main_pipe_out:Stdio = main_pipe
-                                        .stdout.take().unwrap().try_into().expect("Error fail to run main pipe");
-        
+            .args(&first_cmd[1..])
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("Failed to start sed process");
+
+        let main_pipe_out: Stdio = main_pipe
+            .stdout
+            .take()
+            .unwrap()
+            .try_into()
+            .expect("Error fail to run main pipe");
+
         let mut second_pipe = tokio::process::Command::new(&second_cmd[0])
-                                    .args(&second_cmd[1..])
-                                    .stdin(main_pipe_out)
-                                    .stdout(Stdio::piped())
-                                    .spawn()
-                                    .expect("Failed to start sed process");
-        
-        
-        
+            .args(&second_cmd[1..])
+            .stdin(main_pipe_out)
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("Failed to start sed process");
+
         // Read the output of the second pipe
         let mut second_stdout = second_pipe.stdout.take().unwrap();
-        let mut output_bytes: Vec<u8> = Vec::new();
-        
-        // Read stdout asynchronously
-        let read_result = second_stdout.read_to_end(&mut output_bytes).await;
+        let mut reader = BufReader::new(second_stdout).lines();
 
+        let mut output = String::new();
+
+        // 3. Read line-by-line asynchronously
+        // If second_pipe (head) finishes early or sends lines, we capture them line by line
+        while let Ok(Some(line)) = reader.next_line().await {
+            output.push_str(&line);
+            output.push('\n');
+
+            // If second_pipe has exited (e.g., head finished), break out early
+            if let Ok(Some(_)) = second_pipe.try_wait() {
+                break;
+            }
+        }
+
+        // 4. Clean up running processes (kill tail -f)
         let _ = main_pipe.kill().await;
+        let _ = second_pipe.kill().await;
+        let _ = main_pipe.wait().await;
         let _ = second_pipe.wait().await;
 
-        read_result?;
-       let result = String::from_utf8_lossy(&output_bytes).to_string();
-        Ok(strip_trailing_nl(&mut result.to_string()))
-        
-        
+        Ok(strip_trailing_nl(&mut output))
     }
-
-
 
     // fn handle_complete_func(args: Vec<String> ){
     //     match args.as_slice() {
