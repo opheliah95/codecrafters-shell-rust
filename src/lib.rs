@@ -12,7 +12,7 @@ pub mod solutions {
     use std::fs::File;
     use std::fs::metadata;
     use std::sync::{Arc, Mutex};
-    use tokio::io::AsyncBufReadExt;
+    use tokio::io::AsyncReadExt;;
 
 
     pub fn type_impl(input: &str) {
@@ -626,14 +626,19 @@ pub mod solutions {
         
         
         
-        let output = second_pipe.wait_with_output().await?;
+        // Read the output of the second pipe
+        let mut second_stdout = second_pipe.stdout.take().unwrap();
+        let mut output_bytes: Vec<u8> = Vec::new();
+        
+        // Read stdout asynchronously
+        let read_result = second_stdout.read_to_end(&mut output_bytes).await;
+
         let _ = main_pipe.kill().await;
-        if output.status.success() {
-              let result = String::from_utf8_lossy(&output.stdout).to_string();
-             Ok(strip_trailing_nl(&mut result.to_string()))
-        } else {
-            Err(format!("Command failed to run with failed status {}", output.status).into())
-        }
+        let _ = second_pipe.wait().await;
+
+        read_result?;
+       let result = String::from_utf8_lossy(&output_bytes).to_string();
+        Ok(strip_trailing_nl(&mut result.to_string()))
         
         
     }
