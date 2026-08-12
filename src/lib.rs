@@ -604,7 +604,7 @@ pub mod solutions {
         (job_id + 1, pid, status, finished)
     }
 
-    pub async fn handle_dual_command(cmds: Vec<&[String]>) {
+    pub async fn handle_dual_command(cmds: Vec<&[String]>) -> Result<String, Box<dyn std::error::Error>>  {
         let first_cmd = cmds[0];
         let second_cmd = cmds[1];
         let mut main_pipe = process::Command::new(&first_cmd[0])
@@ -632,6 +632,8 @@ pub mod solutions {
         second_out.read_to_string(&mut buffer);
         let improved_line = strip_trailing_nl(&mut buffer);
         println!("{improved_line}");
+
+        Ok(improved_line)
     }
 
 
