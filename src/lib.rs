@@ -753,7 +753,7 @@ pub mod solutions {
 
         let result = strip_trailing_nl(&mut out_str);
         if !result.is_empty() {
-             println!("{}", result.trim());
+             println!("{}", result);
         }
        
     }
