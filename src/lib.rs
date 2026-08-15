@@ -677,7 +677,7 @@ pub mod solutions {
                 return true;
             }
             cmd if *cmd == "type" => {
-                if ["echo", "exit", "type", "pwd", "complete", "jobs"].contains(&args[1].as_str()) {
+                if ["echo", "exit", "type", "pwd", "complete", "jobs", "history"].contains(&args[1].as_str()) {
                     println!("{} is a shell builtin", &args[1]);
 
                     return true;

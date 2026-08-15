@@ -392,7 +392,7 @@ async fn main() -> Result<()> {
                             continue;
                         }
                         cmd if *cmd == "type" => {
-                            if ["echo", "exit", "type", "pwd", "complete", "jobs"]
+                            if ["echo", "exit", "type", "pwd", "complete", "jobs","history"]
                                 .contains(&args[1].as_str())
                             {
                                 println!("{} is a shell builtin", &args[1]);
