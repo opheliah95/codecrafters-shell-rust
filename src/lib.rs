@@ -1,9 +1,9 @@
 pub mod solutions {
     use is_executable::IsExecutable;
     use std::env;
-    use std::io::{Error, ErrorKind, Read, Write, stdout};
+    use std::io::{Error, ErrorKind, Read, Write, pipe, stdout};
     use std::path::{Path, PathBuf};
-    use std::process::{Command, Stdio};
+    use std::process::{ChildStdout, Command, Stdio};
     pub mod cmd;
     use glob::glob;
     use regex::Regex;
@@ -13,6 +13,7 @@ pub mod solutions {
     use std::fs::metadata;
     use std::sync::{Arc, Mutex};
     use tokio::io::{AsyncBufReadExt, BufReader};
+    use tokio::process::Child;
 
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
@@ -660,6 +661,102 @@ pub mod solutions {
         Ok(strip_trailing_nl(&mut output))
     }
 
+    pub fn handle_built_in(args: &[String]) -> bool {
+        if args.len() == 0 {
+            return false;
+        };
+
+        //println!("the cmd is {:?}", args);
+
+        match &args[0] {
+            cmd if *cmd == "exit" => {
+                std::process::exit(0);
+            }
+            cmd if *cmd == "cd" => {
+                cd_path(&args[1..]);
+                return true;
+            }
+            cmd if *cmd == "type" => {
+                if ["echo", "exit", "type", "pwd", "complete", "jobs"].contains(&args[1].as_str()) {
+                    println!("{} is a shell builtin", &args[1]);
+
+                    return true;
+                }
+            }
+            cmd if *cmd == "complete" || *cmd == "jobs" => return true,
+            _ => {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    pub fn handle_single_command(
+        cmd: &[String],
+        prev_out: Option<Stdio>,
+    ) -> Result<std::process::Child, Error> {
+        // Fixed: Added missing semicolon
+        let input: Stdio = match prev_out {
+            Some(val) => val,
+            None => Stdio::piped(),
+        };
+
+        let main_pipe = std::process::Command::new(&cmd[0])
+            .args(&cmd[1..])
+            .stdin(input)
+            .stdout(Stdio::piped())
+            .spawn()?; // Use ? instead of expect for idiomatic error handling
+
+        Ok(main_pipe)
+    }
+
+    // Determine if it is a built-in cmd and pass execution to various cmd
+    pub fn built_in_pipe_handler(cmd: &[String], prev_out: Option<Stdio>) -> ChildStdout {
+        let is_cmd_builtin = handle_built_in(cmd);
+
+        let mut piped_out = if !is_cmd_builtin {
+            handle_single_command(cmd, prev_out).unwrap()
+        } else {
+            // Handle built-in command spawning here if needed,
+            // falling back to an echo command for demonstration
+            Command::new("echo")
+                .stdout(Stdio::piped())
+                .spawn()
+                .expect("echo cmd error")
+        };
+
+        piped_out
+            .stdout
+            .take()
+            .expect("Error: fail to get stdout from child process")
+    }
+
+    pub fn handle_piped_cmds(cmds: Vec<&[String]>) {
+        //println!("the commands are: {:?}", cmds);
+        if cmds.is_empty() {
+            return;
+        }
+
+        let first_cmd = cmds[0];
+        let rest_cmds = &cmds[1..];
+
+        let mut current_stdout = built_in_pipe_handler(first_cmd, None);
+
+        for cmd in rest_cmds.iter() {
+            current_stdout = built_in_pipe_handler(*cmd, Some(Stdio::from(current_stdout)));
+        }
+        let mut output_bytes = Vec::new();
+        current_stdout.read_to_end(&mut output_bytes);
+
+        let mut out_str = String::from_utf8_lossy(&output_bytes).into_owned();
+
+        let result = strip_trailing_nl(&mut out_str);
+        if !result.is_empty() {
+             println!("{}", result.trim());
+        }
+       
+    }
     // fn handle_complete_func(args: Vec<String> ){
     //     match args.as_slice() {
     //         ["complete", "-p" @..] => {

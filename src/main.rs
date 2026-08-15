@@ -1,3 +1,4 @@
+use codecrafters_shell::solutions::handle_piped_cmds;
 #[allow(unused_imports)]
 use codecrafters_shell::solutions::{
     cd_path, check_file_extension, check_valid_path, find_exe_path_partial, find_files_in_pwd,
@@ -367,7 +368,7 @@ async fn main() -> Result<()> {
                     // handle pipes 
                     if args.contains(&"|".to_string()) {
                         let pipe_args: Vec<&[String]> = args.split(|c| c == "|").collect();
-                        let dual_pipe_out = handle_dual_command(pipe_args).await.unwrap();
+                        handle_piped_cmds(pipe_args);
                         //println!("{dual_pipe_out}");
                         stdout().flush().unwrap();
                         continue;
