@@ -11,10 +11,9 @@ pub mod solutions {
     use std::fs;
     use std::fs::File;
     use std::fs::metadata;
+    use std::io::BufRead;
     use std::sync::{Arc, Mutex};
     use tokio::io::{AsyncBufReadExt, BufReader};
-    use std::io::{BufRead};
-  
 
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
@@ -746,12 +745,14 @@ pub mod solutions {
 
         for cmd in rest_cmds.iter() {
             current_stdout = built_in_pipe_handler(*cmd, Some(Stdio::from(current_stdout)));
-        }
-        let mut output_bytes = Vec::new();
+        };
 
         let reader = std::io::BufReader::new(current_stdout);
         for line in reader.lines() {
-            println!("{}", line);
+            match line {
+                Ok(content) => println!("{}", content),
+                Err(e) => eprintln!("Error reading line: {}", e),
+            }
         }
     }
     // fn handle_complete_func(args: Vec<String> ){
