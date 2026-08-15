@@ -13,7 +13,8 @@ pub mod solutions {
     use std::fs::metadata;
     use std::sync::{Arc, Mutex};
     use tokio::io::{AsyncBufReadExt, BufReader};
-    use tokio::process::Child;
+    use std::io::{BufRead};
+  
 
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
@@ -747,15 +748,11 @@ pub mod solutions {
             current_stdout = built_in_pipe_handler(*cmd, Some(Stdio::from(current_stdout)));
         }
         let mut output_bytes = Vec::new();
-        current_stdout.read_to_end(&mut output_bytes);
 
-        let mut out_str = String::from_utf8_lossy(&output_bytes).into_owned();
-
-        let result = strip_trailing_nl(&mut out_str);
-        if !result.is_empty() {
-             println!("{}", result);
+        let reader = std::io::BufReader::new(current_stdout);
+        for line in reader.lines() {
+            println!("{}", line);
         }
-       
     }
     // fn handle_complete_func(args: Vec<String> ){
     //     match args.as_slice() {
