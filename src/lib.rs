@@ -750,7 +750,11 @@ pub mod solutions {
         let reader = std::io::BufReader::new(current_stdout);
         for line in reader.lines() {
             match line {
-                Ok(content) => println!("{}", content),
+                Ok(content) => {
+                    if !content.is_empty() {
+                        println!("{}", content)
+                    }
+                },
                 Err(e) => eprintln!("Error reading line: {}", e),
             }
         }
