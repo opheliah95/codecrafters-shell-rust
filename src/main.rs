@@ -2,7 +2,7 @@ use codecrafters_shell::solutions::handle_piped_cmds;
 #[allow(unused_imports)]
 use codecrafters_shell::solutions::{
     cd_path, check_file_extension, check_valid_path, find_exe_path_partial, find_files_in_pwd,
-    get_pwd, handle_jobs, run_cmd, run_cmd_with_output, strip_trailing_nl,handle_dual_command
+    get_pwd, handle_dual_command, handle_jobs, run_cmd, run_cmd_with_output, strip_trailing_nl,
 };
 
 use codecrafters_shell::solutions::cmd::{CompleteCmd, Job, JobList};
@@ -10,12 +10,12 @@ use codecrafters_shell::solutions::cmd::{CompleteCmd, Job, JobList};
 use rustyline::completion::{Candidate, Completer};
 use rustyline::config::Configurer;
 use rustyline::hint::{Hint, Hinter, HistoryHinter};
-use rustyline::history::{DefaultHistory, History};
+use rustyline::history::{DefaultHistory, History, SearchDirection};
 use rustyline::validate::MatchingBracketValidator;
 use rustyline::{
     Changeset, Cmd, Completer, CompletionType, ConditionalEventHandler, Context, DefaultEditor,
     Editor, Event, EventContext, EventHandler, Helper, Highlighter, KeyCode, KeyEvent, Modifiers,
-    RepeatCount, Result, Validator
+    RepeatCount, Result, Validator,
 };
 use shellwords;
 use std::cell::Cell;
@@ -328,7 +328,7 @@ async fn main() -> Result<()> {
     editor.set_completion_type(CompletionType::List);
 
     // handle file history
-    let mut history = DefaultHistory::new(); 
+    let mut history = DefaultHistory::new();
 
     loop {
         let readline = editor.readline("$ ");
@@ -369,7 +369,7 @@ async fn main() -> Result<()> {
                         job_id = unused_id;
                     }
 
-                    // handle pipes 
+                    // handle pipes
                     if args.contains(&"|".to_string()) {
                         let pipe_args: Vec<&[String]> = args.split(|c| c == "|").collect();
                         handle_piped_cmds(pipe_args);
@@ -381,19 +381,25 @@ async fn main() -> Result<()> {
                     // add cmd to history
                     history.add(&input);
 
-
                     match &args[0] {
                         cmd if cmd.len() == 0 => continue,
                         cmd if *cmd == "exit" => std::process::exit(0),
                         cmd if *cmd == "cd" => cd_path(&args[1..]),
                         cmd if *cmd == "pwd" => get_pwd(),
                         cmd if *cmd == "history" => {
-                           // println!("handling history");
+                            // println!("handling history");
+                            if args.len() > 1 {
+                                let hist_limit = args[1].parse::<usize>().unwrap();
+                                let start = history.len() - hist_limit;
+                                for (idx, val) in history.iter().enumerate().skip(start) {
+                                    println!("{:>4} {}", idx + 1, val);
+                                }
+                                continue;
+                            }
                             for (idx, val) in history.iter().enumerate() {
                                 println!("{:>4} {}", idx + 1, val);
                             }
-                            
-                        },
+                        }
                         cmd if *cmd == "jobs" => {
                             // check if joblist is empty
                             if job_list.jobs.len() == 0 {
@@ -406,7 +412,7 @@ async fn main() -> Result<()> {
                             continue;
                         }
                         cmd if *cmd == "type" => {
-                            if ["echo", "exit", "type", "pwd", "complete", "jobs","history"]
+                            if ["echo", "exit", "type", "pwd", "complete", "jobs", "history"]
                                 .contains(&args[1].as_str())
                             {
                                 println!("{} is a shell builtin", &args[1]);
