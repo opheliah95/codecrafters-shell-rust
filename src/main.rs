@@ -10,12 +10,12 @@ use codecrafters_shell::solutions::cmd::{CompleteCmd, Job, JobList};
 use rustyline::completion::{Candidate, Completer};
 use rustyline::config::Configurer;
 use rustyline::hint::{Hint, Hinter, HistoryHinter};
-use rustyline::history::FileHistory;
+use rustyline::history::{DefaultHistory, History};
 use rustyline::validate::MatchingBracketValidator;
 use rustyline::{
     Changeset, Cmd, Completer, CompletionType, ConditionalEventHandler, Context, DefaultEditor,
     Editor, Event, EventContext, EventHandler, Helper, Highlighter, KeyCode, KeyEvent, Modifiers,
-    RepeatCount, Result, Validator,
+    RepeatCount, Result, Validator
 };
 use shellwords;
 use std::cell::Cell;
@@ -327,8 +327,12 @@ async fn main() -> Result<()> {
     editor.set_helper(Some(h));
     editor.set_completion_type(CompletionType::List);
 
+    // handle file history
+    let mut history = DefaultHistory::new(); 
+
     loop {
         let readline = editor.readline("$ ");
+
         match readline {
             Ok(line) => {
                 let mut input = String::new();
@@ -374,12 +378,22 @@ async fn main() -> Result<()> {
                         continue;
                     }
 
+                    // add cmd to history
+                    history.add(&input);
+
 
                     match &args[0] {
                         cmd if cmd.len() == 0 => continue,
                         cmd if *cmd == "exit" => std::process::exit(0),
                         cmd if *cmd == "cd" => cd_path(&args[1..]),
                         cmd if *cmd == "pwd" => get_pwd(),
+                        cmd if *cmd == "history" => {
+                           // println!("handling history");
+                            for (idx, val) in history.iter().enumerate() {
+                                println!("{:>4} {}", idx + 1, val);
+                            }
+                            
+                        },
                         cmd if *cmd == "jobs" => {
                             // check if joblist is empty
                             if job_list.jobs.len() == 0 {
