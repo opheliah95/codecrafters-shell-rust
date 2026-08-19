@@ -6,7 +6,7 @@ use codecrafters_shell::solutions::{
 };
 
 use codecrafters_shell::solutions::cmd::{CompleteCmd, Job, JobList};
-use codecrafters_shell::solutions::history::{HistHelper};
+use codecrafters_shell::solutions::history::HistHelper;
 use rustyline::completion::{Candidate, Completer};
 use rustyline::config::Configurer;
 use rustyline::hint::{Hint, Hinter, HistoryHinter};
@@ -14,7 +14,7 @@ use rustyline::history::{DefaultHistory, History, SearchDirection};
 use rustyline::{
     Changeset, Cmd, Completer, CompletionType, ConditionalEventHandler, Context, DefaultEditor,
     Editor, Event, EventContext, EventHandler, Helper, Highlighter, KeyCode, KeyEvent, Modifiers,
-    RepeatCount, Result, Validator
+    RepeatCount, Result, Validator,
 };
 use shellwords;
 use std::cell::Cell;
@@ -284,8 +284,6 @@ fn diy_hints() -> HashSet<CommandHint> {
     set
 }
 
-
-
 #[tokio::main]
 async fn main() -> Result<()> {
     let last_finished_job = Arc::new(Mutex::new("".to_string()));
@@ -317,7 +315,7 @@ async fn main() -> Result<()> {
 
     // hist handler setup
     let mut hist_handler_shared = history_handler.clone();
-    let mut editor_handler = history_handler.clone();   
+    let mut editor_handler = history_handler.clone();
     //let key_vec: Vec<KeyEvent> = [KeyEvent(KeyCode::Down, Modifiers::NONE), KeyEvent(KeyCode::Up, Modifiers::NONE)].to_vec();
     editor.bind_sequence(
         Event::Any,
@@ -326,9 +324,8 @@ async fn main() -> Result<()> {
 
     let file = std::fs::File::create_new("history.txt");
     editor.append_history("history.txt");
-     if editor.load_history("history.txt").is_err() {
+    if editor.load_history("history.txt").is_err() {
         println!("history path not exist!")
-
     }
     loop {
         let readline = editor.readline("$ ");
@@ -379,17 +376,15 @@ async fn main() -> Result<()> {
                         continue;
                     }
 
-                    // add cmd to history
-                    hist_handler_shared.add_history(&input);
-                    hist_handler_shared.set_index_to_end();
-                    editor.add_history_entry(line.as_str());
-
                     match &args[0] {
                         cmd if cmd.len() == 0 => continue,
                         cmd if *cmd == "exit" => std::process::exit(0),
                         cmd if *cmd == "cd" => cd_path(&args[1..]),
                         cmd if *cmd == "pwd" => get_pwd(),
                         cmd if *cmd == "history" => {
+                            // add cmd to history
+                            hist_handler_shared.add_history(&input);
+                            hist_handler_shared.set_index_to_end();
                             if args.len() > 1 {
                                 let hist_limit = args[1].parse::<usize>().unwrap();
                                 hist_handler_shared.show_n_lines_history(hist_limit);
@@ -398,6 +393,9 @@ async fn main() -> Result<()> {
                             hist_handler_shared.show_all_history();
                         }
                         cmd if *cmd == "jobs" => {
+                            // add cmd to history
+                            hist_handler_shared.add_history(&input);
+                            hist_handler_shared.set_index_to_end();
                             // check if joblist is empty
                             if job_list.jobs.len() == 0 {
                                 stdout().flush().unwrap();
@@ -424,6 +422,11 @@ async fn main() -> Result<()> {
                             };
 
                             if ["-p", "-C", "-r"].contains(&args[1].as_str()) {
+                                // add to history
+                                // add cmd to history
+                                hist_handler_shared.add_history(&input);
+                                hist_handler_shared.set_index_to_end();
+                                
                                 let first_arg = args[1].as_str();
                                 let last_arg = &args[args.len() - 1];
                                 let mut complete_cmd = CompleteCmd {
@@ -530,6 +533,9 @@ async fn main() -> Result<()> {
                             job_list.display_last_job();
                         }
                     }
+                    // add cmd to history
+                    hist_handler_shared.add_history(&input);
+                    hist_handler_shared.set_index_to_end();
                 }
             }
             Err(_) => println!("No input"),
