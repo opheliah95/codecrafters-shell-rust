@@ -6,16 +6,15 @@ use codecrafters_shell::solutions::{
 };
 
 use codecrafters_shell::solutions::cmd::{CompleteCmd, Job, JobList};
-
+use codecrafters_shell::solutions::history::{HistHelper};
 use rustyline::completion::{Candidate, Completer};
 use rustyline::config::Configurer;
 use rustyline::hint::{Hint, Hinter, HistoryHinter};
 use rustyline::history::{DefaultHistory, History, SearchDirection};
-use rustyline::validate::MatchingBracketValidator;
 use rustyline::{
     Changeset, Cmd, Completer, CompletionType, ConditionalEventHandler, Context, DefaultEditor,
     Editor, Event, EventContext, EventHandler, Helper, Highlighter, KeyCode, KeyEvent, Modifiers,
-    RepeatCount, Result, Validator,
+    RepeatCount, Result, Validator
 };
 use shellwords;
 use std::cell::Cell;
@@ -285,22 +284,8 @@ fn diy_hints() -> HashSet<CommandHint> {
     set
 }
 
-#[derive(Clone)]
-struct TabHandler;
-impl ConditionalEventHandler for TabHandler {
-    fn handle(&self, evt: &Event, n: RepeatCount, _: bool, ctx: &EventContext) -> Option<Cmd> {
-        if let Some(k) = evt.get(0) {
-            if let Some(txt) = ctx.hint_text() {
-                if txt.len() == 1 {
-                    return Some(Cmd::Insert(1, txt.to_string()));
-                }
-            } else {
-                return Some(Cmd::Noop);
-            }
-        }
-        None
-    }
-}
+
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let last_finished_job = Arc::new(Mutex::new("".to_string()));
@@ -323,18 +308,34 @@ async fn main() -> Result<()> {
         complete_history: complete_history.clone(),
         cached_complete: cached_complete_cmd,
     };
-    let mut editor: Editor<MyHelper, _> = Editor::new()?;
+
+    // handle file history
+    let mut history_handler = HistHelper::new();
+    let mut editor: Editor<MyHelper, DefaultHistory> = Editor::new()?;
     editor.set_helper(Some(h));
     editor.set_completion_type(CompletionType::List);
 
-    // handle file history
-    let mut history = DefaultHistory::new();
+    // hist handler setup
+    let mut hist_handler_shared = history_handler.clone();
+    let mut editor_handler = history_handler.clone();   
+    //let key_vec: Vec<KeyEvent> = [KeyEvent(KeyCode::Down, Modifiers::NONE), KeyEvent(KeyCode::Up, Modifiers::NONE)].to_vec();
+    editor.bind_sequence(
+        Event::Any,
+        EventHandler::Conditional(Box::new(editor_handler)),
+    );
 
+    let file = std::fs::File::create_new("history.txt");
+    editor.append_history("history.txt");
+     if editor.load_history("history.txt").is_err() {
+        println!("history path not exist!")
+
+    }
     loop {
         let readline = editor.readline("$ ");
 
         match readline {
             Ok(line) => {
+                // reset index
                 let mut input = String::new();
                 input = line.trim().to_string();
                 let mut args = shellwords::split(&input).unwrap();
@@ -379,7 +380,9 @@ async fn main() -> Result<()> {
                     }
 
                     // add cmd to history
-                    history.add(&input);
+                    hist_handler_shared.add_history(&input);
+                    hist_handler_shared.set_index_to_end();
+                    editor.add_history_entry(line.as_str());
 
                     match &args[0] {
                         cmd if cmd.len() == 0 => continue,
@@ -387,18 +390,12 @@ async fn main() -> Result<()> {
                         cmd if *cmd == "cd" => cd_path(&args[1..]),
                         cmd if *cmd == "pwd" => get_pwd(),
                         cmd if *cmd == "history" => {
-                            // println!("handling history");
                             if args.len() > 1 {
                                 let hist_limit = args[1].parse::<usize>().unwrap();
-                                let start = history.len() - hist_limit;
-                                for (idx, val) in history.iter().enumerate().skip(start) {
-                                    println!("{:>4} {}", idx + 1, val);
-                                }
+                                hist_handler_shared.show_n_lines_history(hist_limit);
                                 continue;
                             }
-                            for (idx, val) in history.iter().enumerate() {
-                                println!("{:>4} {}", idx + 1, val);
-                            }
+                            hist_handler_shared.show_all_history();
                         }
                         cmd if *cmd == "jobs" => {
                             // check if joblist is empty

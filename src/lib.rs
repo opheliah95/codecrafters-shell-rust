@@ -5,6 +5,7 @@ pub mod solutions {
     use std::path::{Path, PathBuf};
     use std::process::{ChildStdout, Command, Stdio};
     pub mod cmd;
+    pub mod history;
     use glob::glob;
     use regex::Regex;
     use shellwords;
