@@ -130,29 +130,27 @@ impl ConditionalEventHandler for HistHelper {
     fn handle(
         &self,
         evt: &Event,
-        n: RepeatCount,
-        positive: bool,
+        _n: RepeatCount,
+        _positive: bool,
         ctx: &EventContext<'_>,
     ) -> Option<Cmd> {
-        // Check for Up/Down keys
         if let Some(k) = evt.get(0) {
-            if *k == KeyEvent(KeyCode::Up, Modifiers::NONE) {
-                let res = self.show_history_by_arrow(SearchDirection::Reverse);
-                let hist =res.as_ref().map(String::as_str).unwrap();
-                
-               
-                return Some(Cmd::Repaint);
-            }
-            if *k == KeyEvent(KeyCode::Down, Modifiers::NONE) {
-        
-                let res = self.show_history_by_arrow(SearchDirection::Forward);
-                let hist =res.as_ref().map(String::as_str).unwrap();
-               
-                return Some(Cmd::Repaint);
+            let dir = if *k == KeyEvent(KeyCode::Up, Modifiers::NONE) {
+                Some(SearchDirection::Reverse)
+            } else if *k == KeyEvent(KeyCode::Down, Modifiers::NONE) {
+                Some(SearchDirection::Forward)
+            } else {
+                None
+            };
+
+            if let Some(d) = dir {
+                if let Some(hist) = self.show_history_by_arrow(d) {
+                    // Directly replace the buffer contents
+                    //ctx.editor().replace_buffer(&hist);
+                    return Some(Cmd::Repaint);
+                }
             }
         }
         None
     }
 }
-
-
