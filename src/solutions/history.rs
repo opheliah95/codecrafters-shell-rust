@@ -96,7 +96,7 @@ impl HistHelper {
                 Some(hist) => {
                     let entry = hist.entry.as_ref();
                     //  stdout().flush().unwrap();
-                    println!("{entry}");
+                    //println!("{entry}");
                     // stdout().flush().unwrap();
                     return Some(entry.to_string());
                 }
@@ -147,7 +147,7 @@ impl ConditionalEventHandler for HistHelper {
                 if let Some(hist) = self.show_history_by_arrow(d) {
                     // Directly replace the buffer contents
                     //ctx.editor().replace_buffer(&hist);
-                    return Some(Cmd::Repaint);
+                    return Some(Cmd::PreviousHistory);
                 }
             }
         }
