@@ -322,11 +322,6 @@ async fn main() -> Result<()> {
         EventHandler::Conditional(Box::new(editor_handler)),
     );
 
-    let file = std::fs::File::create_new("history.txt");
-    editor.append_history("history.txt");
-    if editor.load_history("history.txt").is_err() {
-        println!("history path not exist!")
-    }
     loop {
         let readline = editor.readline("$ ");
 
@@ -379,7 +374,7 @@ async fn main() -> Result<()> {
                     // add cmd to history
                     hist_handler_shared.add_history(&input);
                     hist_handler_shared.set_index_to_end();
-                    
+
                     match &args[0] {
                         cmd if cmd.len() == 0 => continue,
                         cmd if *cmd == "exit" => std::process::exit(0),
