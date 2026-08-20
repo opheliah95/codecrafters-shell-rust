@@ -324,6 +324,7 @@ async fn main() -> Result<()> {
       let mut file = fs::OpenOptions::new()
         .write(true)
         .append(true)
+        .create(true)
         .open("history.txt")
         .unwrap();
 
