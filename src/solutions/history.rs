@@ -1,12 +1,11 @@
-use std::sync::{Arc, Mutex};
 use rustyline::history::{DefaultHistory, History, SearchDirection};
 use rustyline::{
     Changeset, Cmd, Completer, CompletionType, ConditionalEventHandler, Context, DefaultEditor,
     Editor, Event, EventContext, EventHandler, Helper, Highlighter, KeyCode, KeyEvent, Modifiers,
-    RepeatCount, Result, Validator, 
+    RepeatCount, Result, Validator,
 };
 use std::io::stdout;
-
+use std::sync::{Arc, Mutex};
 
 #[derive(Clone)]
 pub struct HistHelper {
@@ -145,7 +144,11 @@ impl ConditionalEventHandler for HistHelper {
 
             if let Some(d) = dir {
                 if let Some(hist) = self.show_history_by_arrow(d) {
-                    
+                    let mut current_index_guard = self
+                        .current_index
+                        .lock()
+                        .expect("error mutex current index");
+                    *current_index_guard -=1;
                     // 2. Repaint the updated line
                     return Some(Cmd::Repaint);
                 }
