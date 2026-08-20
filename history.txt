@@ -1,0 +1,4 @@
+echo pineapple
+echo hello
+echo 3
+exit
