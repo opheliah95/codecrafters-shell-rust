@@ -20,13 +20,13 @@ use shellwords;
 use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::HashSet;
-use std::fmt::format;
 use std::io::{Write, pipe, stdout};
 use std::process::Command;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::{fs, vec};
 use tokio;
+use std::path::Path;
 
 #[derive(Clone, Helper, Validator, Highlighter)]
 struct MyHelper {
@@ -274,6 +274,7 @@ impl Hinter for MyHelper {
     }
 }
 
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let last_finished_job = Arc::new(Mutex::new("".to_string()));
@@ -307,11 +308,22 @@ async fn main() -> Result<()> {
     let mut hist_handler_shared = history_handler.clone();
     let mut editor_handler = history_handler.clone();
     //let key_vec: Vec<KeyEvent> = [KeyEvent(KeyCode::Down, Modifiers::NONE), KeyEvent(KeyCode::Up, Modifiers::NONE)].to_vec();
-    editor.bind_sequence(
-        Event::Any,
-        EventHandler::Conditional(Box::new(editor_handler)),
-    );
-    hist_handler_shared.set_index_to_end();
+    // editor.bind_sequence(
+    //     Event::Any,
+    //     EventHandler::Conditional(Box::new(editor_handler)),
+    // );
+
+    editor.bind_sequence(KeyEvent(KeyCode::Down, Modifiers::NONE), Cmd::HistorySearchForward);
+    editor.bind_sequence(KeyEvent(KeyCode::Up, Modifiers::NONE), Cmd::HistorySearchBackward);
+    
+    let path =Path::new("history.txt");
+    if !path.exists() {
+        fs::create_dir(path);
+    }
+    if editor.load_history("history.txt").is_err() {
+        println!("No previous history.");
+    }
+
 
     loop {
         let readline = editor.readline("$ ");
@@ -363,7 +375,9 @@ async fn main() -> Result<()> {
                     }
 
                     // add cmd to history
+                    editor.add_history_entry(line.as_str())?;
                     hist_handler_shared.add_history(&input);
+                    hist_handler_shared.set_index_to_end();
 
                     match &args[0] {
                         cmd if cmd.len() == 0 => continue,
@@ -379,6 +393,7 @@ async fn main() -> Result<()> {
                             hist_handler_shared.show_all_history();
                         }
                         cmd if *cmd == "jobs" => {
+        
                             // check if joblist is empty
                             if job_list.jobs.len() == 0 {
                                 stdout().flush().unwrap();
@@ -405,6 +420,7 @@ async fn main() -> Result<()> {
                             };
 
                             if ["-p", "-C", "-r"].contains(&args[1].as_str()) {
+                               
                                 let first_arg = args[1].as_str();
                                 let last_arg = &args[args.len() - 1];
                                 let mut complete_cmd = CompleteCmd {
@@ -511,6 +527,7 @@ async fn main() -> Result<()> {
                             job_list.display_last_job();
                         }
                     }
+                    
                 }
             }
             Err(_) => println!("No input"),

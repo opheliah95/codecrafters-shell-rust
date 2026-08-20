@@ -148,7 +148,6 @@ impl ConditionalEventHandler for HistHelper {
                         .current_index
                         .lock()
                         .expect("error mutex current index");
-                    *current_index_guard -=1;
                     // 2. Repaint the updated line
                     return Some(Cmd::Repaint);
                 }
