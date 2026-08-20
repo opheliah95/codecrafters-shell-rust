@@ -274,7 +274,6 @@ impl Hinter for MyHelper {
     }
 }
 
-
 #[tokio::main]
 async fn main() -> Result<()> {
     let last_finished_job = Arc::new(Mutex::new("".to_string()));
@@ -312,6 +311,7 @@ async fn main() -> Result<()> {
         Event::Any,
         EventHandler::Conditional(Box::new(editor_handler)),
     );
+    hist_handler_shared.set_index_to_end();
 
     loop {
         let readline = editor.readline("$ ");
@@ -364,7 +364,6 @@ async fn main() -> Result<()> {
 
                     // add cmd to history
                     hist_handler_shared.add_history(&input);
-                    hist_handler_shared.set_index_to_end();
 
                     match &args[0] {
                         cmd if cmd.len() == 0 => continue,
@@ -380,7 +379,6 @@ async fn main() -> Result<()> {
                             hist_handler_shared.show_all_history();
                         }
                         cmd if *cmd == "jobs" => {
-        
                             // check if joblist is empty
                             if job_list.jobs.len() == 0 {
                                 stdout().flush().unwrap();
@@ -407,7 +405,6 @@ async fn main() -> Result<()> {
                             };
 
                             if ["-p", "-C", "-r"].contains(&args[1].as_str()) {
-                               
                                 let first_arg = args[1].as_str();
                                 let last_arg = &args[args.len() - 1];
                                 let mut complete_cmd = CompleteCmd {
@@ -514,7 +511,6 @@ async fn main() -> Result<()> {
                             job_list.display_last_job();
                         }
                     }
-                    
                 }
             }
             Err(_) => println!("No input"),
