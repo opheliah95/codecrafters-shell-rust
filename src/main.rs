@@ -21,12 +21,12 @@ use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::HashSet;
 use std::io::{Write, pipe, stdout};
+use std::path::Path;
 use std::process::Command;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::{fs, vec};
 use tokio;
-use std::path::Path;
 
 #[derive(Clone, Helper, Validator, Highlighter)]
 struct MyHelper {
@@ -274,7 +274,6 @@ impl Hinter for MyHelper {
     }
 }
 
-
 #[tokio::main]
 async fn main() -> Result<()> {
     let last_finished_job = Arc::new(Mutex::new("".to_string()));
@@ -315,13 +314,10 @@ async fn main() -> Result<()> {
 
     editor.bind_sequence(KeyEvent(KeyCode::Down, Modifiers::NONE), Cmd::NextHistory);
     editor.bind_sequence(KeyEvent(KeyCode::Up, Modifiers::NONE), Cmd::PreviousHistory);
-    
+
     // history path
-    let path =Path::new("history.txt");
-    if !path.exists() {
-        fs::create_dir(path);
-    }
-      let mut file = fs::OpenOptions::new()
+
+    let mut file = fs::OpenOptions::new()
         .write(true)
         .append(true)
         .create(true)
@@ -331,7 +327,6 @@ async fn main() -> Result<()> {
     if editor.load_history("history.txt").is_err() {
         println!("No previous history.");
     }
-
 
     loop {
         let readline = editor.readline("$ ");
@@ -402,7 +397,6 @@ async fn main() -> Result<()> {
                             hist_handler_shared.show_all_history();
                         }
                         cmd if *cmd == "jobs" => {
-        
                             // check if joblist is empty
                             if job_list.jobs.len() == 0 {
                                 stdout().flush().unwrap();
@@ -429,7 +423,6 @@ async fn main() -> Result<()> {
                             };
 
                             if ["-p", "-C", "-r"].contains(&args[1].as_str()) {
-                               
                                 let first_arg = args[1].as_str();
                                 let last_arg = &args[args.len() - 1];
                                 let mut complete_cmd = CompleteCmd {
@@ -536,7 +529,6 @@ async fn main() -> Result<()> {
                             job_list.display_last_job();
                         }
                     }
-                    
                 }
             }
             Err(_) => println!("No input"),
