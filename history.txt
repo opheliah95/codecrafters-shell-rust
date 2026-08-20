@@ -1,4 +1,4 @@
-echo pineapple
-echo hello
-echo 3
-exit
+echo orange pear
+echo orange raspberry
+invalid_apple_command
+echo apple strawberry
