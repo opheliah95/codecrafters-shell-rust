@@ -307,14 +307,14 @@ async fn main() -> Result<()> {
     // hist handler setup
     let mut hist_handler_shared = history_handler.clone();
     let mut editor_handler = history_handler.clone();
-    //let key_vec: Vec<KeyEvent> = [KeyEvent(KeyCode::Down, Modifiers::NONE), KeyEvent(KeyCode::Up, Modifiers::NONE)].to_vec();
-    editor.bind_sequence(
-        Event::Any,
-        EventHandler::Conditional(Box::new(editor_handler)),
-    );
+    // //let key_vec: Vec<KeyEvent> = [KeyEvent(KeyCode::Down, Modifiers::NONE), KeyEvent(KeyCode::Up, Modifiers::NONE)].to_vec();
+    // editor.bind_sequence(
+    //     Event::Any,
+    //     EventHandler::Conditional(Box::new(editor_handler)),
+    // );
 
-    // editor.bind_sequence(KeyEvent(KeyCode::Down, Modifiers::NONE), Cmd::HistorySearchForward);
-    // editor.bind_sequence(KeyEvent(KeyCode::Up, Modifiers::NONE), Cmd::HistorySearchBackward);
+    editor.bind_sequence(KeyEvent(KeyCode::Down, Modifiers::NONE), Cmd::NextHistory);
+    editor.bind_sequence(KeyEvent(KeyCode::Up, Modifiers::NONE), Cmd::PreviousHistory);
     
     // history path
     let path =Path::new("history.txt");
