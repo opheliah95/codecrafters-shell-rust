@@ -1,0 +1,13 @@
+echo hello
+echo hi
+echo test
+invalid cmd
+exit
+echo hi
+exit
+echo hello
+exit
+echo 1
+echo 2
+echo 3
+codecrafters submit

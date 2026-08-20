@@ -300,7 +300,7 @@ async fn main() -> Result<()> {
 
     // handle file history
     let mut history_handler = HistHelper::new();
-    let mut editor: Editor<MyHelper, DefaultHistory> = Editor::new()?;
+    let mut editor: Editor<MyHelper, _> = Editor::new()?;
     editor.set_helper(Some(h));
     editor.set_completion_type(CompletionType::List);
 
@@ -308,18 +308,25 @@ async fn main() -> Result<()> {
     let mut hist_handler_shared = history_handler.clone();
     let mut editor_handler = history_handler.clone();
     //let key_vec: Vec<KeyEvent> = [KeyEvent(KeyCode::Down, Modifiers::NONE), KeyEvent(KeyCode::Up, Modifiers::NONE)].to_vec();
-    // editor.bind_sequence(
-    //     Event::Any,
-    //     EventHandler::Conditional(Box::new(editor_handler)),
-    // );
+    editor.bind_sequence(
+        Event::Any,
+        EventHandler::Conditional(Box::new(editor_handler)),
+    );
 
-    editor.bind_sequence(KeyEvent(KeyCode::Down, Modifiers::NONE), Cmd::HistorySearchForward);
-    editor.bind_sequence(KeyEvent(KeyCode::Up, Modifiers::NONE), Cmd::HistorySearchBackward);
+    // editor.bind_sequence(KeyEvent(KeyCode::Down, Modifiers::NONE), Cmd::HistorySearchForward);
+    // editor.bind_sequence(KeyEvent(KeyCode::Up, Modifiers::NONE), Cmd::HistorySearchBackward);
     
+    // history path
     let path =Path::new("history.txt");
     if !path.exists() {
         fs::create_dir(path);
     }
+      let mut file = fs::OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open("history.txt")
+        .unwrap();
+
     if editor.load_history("history.txt").is_err() {
         println!("No previous history.");
     }
@@ -375,7 +382,8 @@ async fn main() -> Result<()> {
                     }
 
                     // add cmd to history
-                    editor.add_history_entry(line.as_str())?;
+                    //editor.add_history_entry(line.as_str())?;
+                    writeln!(file, "{line}");
                     hist_handler_shared.add_history(&input);
                     hist_handler_shared.set_index_to_end();
 
