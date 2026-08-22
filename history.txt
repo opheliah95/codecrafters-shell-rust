@@ -8,3 +8,11 @@ exit
 echo 1
 cho 2
 exit
+history
+echo 2
+history
+history 2
+history
+echo 2
+history
+exit

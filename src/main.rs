@@ -387,6 +387,7 @@ async fn main() -> rustyline::Result<()> {
 
                     // add cmd to history
                     editor.add_history_entry(line.as_str())?;
+                    hist_handler_shared.add_history(&line);
                     //#[cfg(feature = "with-file-history")]                      hist_handler_shared.add_history(&input);
                     editor.append_history("history.txt");
                     hist_handler_shared.set_index_to_end();

@@ -6,7 +6,6 @@ pub mod solutions {
     use std::process::{ChildStdout, Command, Stdio};
     pub mod cmd;
     pub mod history;
-    pub mod histfile;
     use glob::glob;
     use regex::Regex;
     use shellwords;
