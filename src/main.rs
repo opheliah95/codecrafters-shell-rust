@@ -14,7 +14,7 @@ use rustyline::history::{DefaultHistory, History, SearchDirection};
 use rustyline::{
     Changeset, Cmd, Completer, CompletionType, ConditionalEventHandler, Context, DefaultEditor,
     Editor, Event, EventContext, EventHandler, Helper, Highlighter, KeyCode, KeyEvent, Modifiers,
-    RepeatCount, Result, Validator,
+    RepeatCount, Result, Validator, Config
 };
 use shellwords;
 use std::cell::Cell;
@@ -275,7 +275,7 @@ impl Hinter for MyHelper {
 }
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> rustyline::Result<()> {
     let last_finished_job = Arc::new(Mutex::new("".to_string()));
     let last_finished_job_id = Arc::new(Mutex::new(0));
     //let last_finished_job_clone = Arc::clone(&last_finished_job);
@@ -297,9 +297,16 @@ async fn main() -> Result<()> {
         cached_complete: cached_complete_cmd,
     };
 
+    //add config
+     let config = Config::builder()
+        .history_ignore_space(true)
+        .completion_type(CompletionType::List)
+        .build();
+
     // handle file history
     let mut history_handler = HistHelper::new();
-    let mut editor: Editor<MyHelper, _> = Editor::new()?;
+    let mut editor = Editor::<MyHelper, _>::with_config(config)?;
+
     editor.set_helper(Some(h));
     editor.set_completion_type(CompletionType::List);
 
@@ -312,8 +319,8 @@ async fn main() -> Result<()> {
     //     EventHandler::Conditional(Box::new(editor_handler)),
     // );
 
-      rl.bind_sequence(KeyEvent(KeyCode::Down, Modifiers::NONE), Cmd::HistorySearchForward);
-    rl.bind_sequence(KeyEvent(KeyCode::Up, Modifiers::NONE), Cmd::HistorySearchBackward);
+    editor.bind_sequence(KeyEvent(KeyCode::Down, Modifiers::NONE), Cmd::NextHistory);
+    editor.bind_sequence(KeyEvent(KeyCode::Up, Modifiers::NONE), Cmd::PreviousHistory);
 
     // history path
 
@@ -323,6 +330,7 @@ async fn main() -> Result<()> {
         .create(true)
         .open("history.txt")
         .unwrap();
+
     #[cfg(feature = "with-file-history")]
     if editor.load_history("history.txt").is_err() {
         println!("No previous history.");
@@ -379,8 +387,8 @@ async fn main() -> Result<()> {
 
                     // add cmd to history
                     editor.add_history_entry(line.as_str())?;
-                    #[cfg(feature = "with-file-history")]                      hist_handler_shared.add_history(&input);
-                    editor.save_history("history.txt");
+                    //#[cfg(feature = "with-file-history")]                      hist_handler_shared.add_history(&input);
+                    editor.append_history("history.txt");
                     hist_handler_shared.set_index_to_end();
 
                     match &args[0] {

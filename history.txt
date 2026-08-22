@@ -1,4 +1,10 @@
-echo orange pear
-echo orange raspberry
-invalid_apple_command
-echo apple strawberry
+#V2
+echo 1
+echo 2
+exit
+echo i
+echo 2
+exit
+echo 1
+cho 2
+exit
