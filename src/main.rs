@@ -312,8 +312,8 @@ async fn main() -> Result<()> {
     //     EventHandler::Conditional(Box::new(editor_handler)),
     // );
 
-    editor.bind_sequence(KeyEvent(KeyCode::Down, Modifiers::NONE), Cmd::NextHistory);
-    editor.bind_sequence(KeyEvent(KeyCode::Up, Modifiers::NONE), Cmd::PreviousHistory);
+      rl.bind_sequence(KeyEvent(KeyCode::Down, Modifiers::NONE), Cmd::HistorySearchForward);
+    rl.bind_sequence(KeyEvent(KeyCode::Up, Modifiers::NONE), Cmd::HistorySearchBackward);
 
     // history path
 
@@ -323,7 +323,7 @@ async fn main() -> Result<()> {
         .create(true)
         .open("history.txt")
         .unwrap();
-
+    #[cfg(feature = "with-file-history")]
     if editor.load_history("history.txt").is_err() {
         println!("No previous history.");
     }
@@ -378,9 +378,9 @@ async fn main() -> Result<()> {
                     }
 
                     // add cmd to history
-                    //editor.add_history_entry(line.as_str())?;
-                    writeln!(file, "{line}");
-                    hist_handler_shared.add_history(&input);
+                    editor.add_history_entry(line.as_str())?;
+                    #[cfg(feature = "with-file-history")]                      hist_handler_shared.add_history(&input);
+                    editor.save_history("history.txt");
                     hist_handler_shared.set_index_to_end();
 
                     match &args[0] {
