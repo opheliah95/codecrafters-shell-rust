@@ -16,3 +16,11 @@ history
 echo 2
 history
 exit
+history
+add 3
+history
+clear
+ls
+mkdir hello
+mkdir -r hello/hi
+cd hello

@@ -1,0 +1,4 @@
+#V2
+cd hello
+ls hi/
+codecrafters submit

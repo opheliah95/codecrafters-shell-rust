@@ -147,7 +147,7 @@ impl Completer for MyHelper {
             .collect();
 
         let mut matched_pwd_files = find_files_in_pwd(partial).unwrap();
-
+        println!("matches: {:?}" , matched_pwd_files);
         matched_pwd_files.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
         let cloned_match_pwd = matched_pwd_files.clone();
         let mut pwd_all_matched: bool = true;
@@ -324,12 +324,12 @@ async fn main() -> rustyline::Result<()> {
 
     // history path
 
-    let mut file = fs::OpenOptions::new()
-        .write(true)
-        .append(true)
-        .create(true)
-        .open("history.txt")
-        .unwrap();
+    // let mut file = fs::OpenOptions::new()
+    //     .write(true)
+    //     .append(true)
+    //     .create(true)
+    //     .open("history.txt")
+    //     .unwrap();
 
     #[cfg(feature = "with-file-history")]
     if editor.load_history("history.txt").is_err() {
