@@ -401,16 +401,19 @@ async fn main() -> rustyline::Result<()> {
                                 let path_exists = hist_path.try_exists().unwrap_or(false);
                                 match &args[1] {
                                     arg if arg.len() == 0 => continue,
-                                    arg if arg == "r" => {
+                                    arg if arg == "-r" => {
                                         if path_exists {
                                             history_handler.load_history(hist_path);
                                         }
                                         continue;
                                     }
-                                    arg if arg == "w" => {
-                                        if path_exists {
-                                            history_handler.write_history_to_file(hist_path);
-                                        }
+                                    arg if arg == "-w" => {
+                                        if ! path_exists {
+                                            let file = std::fs::File::create(hist_path);
+                                            //println!("file created {}", args[2]);
+                                        } 
+                                        history_handler.write_history_to_file(hist_path);
+
                                         continue;
                                     }
                                     _ => continue,

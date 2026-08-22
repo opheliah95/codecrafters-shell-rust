@@ -40,3 +40,14 @@ history -r test-hist.txt
 history
 codecrafters submit
 exit
+history w ./mytest/hist.txt
+exit
+history -w ./cat/meow
+exit
+history -w ./cat/mew
+exit
+history -w ./cat/mew
+exit
+history -w ./cat/mew
+history
+exit
