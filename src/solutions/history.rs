@@ -1,4 +1,5 @@
 use rustyline::history::{DefaultHistory, History};
+use std::fmt::write;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::Read;
@@ -66,33 +67,12 @@ impl HistHelper {
     pub fn write_history_to_file(&mut self, path: &Path) -> std::io::Result<()> {
         // remove first line
         let path_string = path.to_string_lossy().into_owned();
-        let file = File::open(&path_string)?;
-        let reader = BufReader::new(file);
-        let mut lines: Vec<String> = Vec::new();
+        let mut file = File::open(&path_string)?;
+        //println!("path is {}", &path_string );
 
-        for line_result in reader.lines() {
-            let line = line_result?;
-            lines.push(line);
+        for (idx, val) in self.history.iter().enumerate() {
+             writeln!(file, "{}", val)?;
         }
-
-        if lines.len() > 0 {
-            let first_line = lines[0].trim();
-            if first_line == "#V2" || first_line.is_empty() {
-                //println!("Removing first line: {}", lines[0]);
-                lines.remove(0);
-            }
-        }
-
-        let mut file = OpenOptions::new()
-            .write(true)
-            .truncate(true) // Clears the file immediately
-            .open(&path_string)?;
-
-        for line in lines {
-            writeln!(file, "{}", line)?; // Writes line and a newline
-        }
-
-        self.history.save(path);
 
         return Ok(());
     }
