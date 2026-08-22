@@ -394,15 +394,27 @@ async fn main() -> rustyline::Result<()> {
                                 continue;
                             }
                             // handle -r
-                            if args[1] == "-r" && args.len() == 3 {
+                            if args.len() == 3 {
                                 // check if history file is valid
                                 // if hist file valid append to history
                                 let hist_path = Path::new(&args[2]);
                                 let path_exists = hist_path.try_exists().unwrap_or(false);
-                                if path_exists {
-                                    history_handler.load_history(hist_path);
+                                match &args[1] {
+                                    arg if arg.len() == 0 => continue,
+                                    arg if arg == "r" => {
+                                        if path_exists {
+                                            history_handler.load_history(hist_path);
+                                        }
+                                        continue;
+                                    }
+                                    arg if arg == "w" => {
+                                        if path_exists {
+                                            history_handler.write_history_to_file(hist_path);
+                                        }
+                                        continue;
+                                    }
+                                    _ => continue,
                                 }
-                                continue;
                             }
 
                             if args.len() == 2 {

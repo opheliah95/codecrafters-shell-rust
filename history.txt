@@ -39,3 +39,4 @@ exit
 history -r test-hist.txt
 history
 codecrafters submit
+exit

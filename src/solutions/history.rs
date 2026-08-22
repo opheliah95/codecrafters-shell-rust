@@ -54,4 +54,8 @@ impl HistHelper {
             Err(e) => println!("error history: {e:?}"),
         }
     }
+
+    pub fn write_history_to_file(&mut self, path: &Path) {
+        self.history.save(path);
+    }
 }
