@@ -1,12 +1,7 @@
-use rustyline::history::{DefaultHistory, History, SearchDirection};
-use rustyline::{
-    Changeset, Cmd, Completer, CompletionType, ConditionalEventHandler, Context, DefaultEditor,
-    Editor, Event, EventContext, EventHandler, Helper, Highlighter, KeyCode, KeyEvent, Modifiers,
-    RepeatCount, Result, Validator,
-};
+use rustyline::history::{DefaultHistory, History};
 use std::io::stdout;
-use std::sync::{Arc, Mutex};
-
+use std::path::Path;
+use std::sync::Arc;
 
 pub struct HistHelper {
     pub history: DefaultHistory,
@@ -48,7 +43,15 @@ impl HistHelper {
     pub fn set_index_to_start(&mut self) {
         self.current_index = 0;
     }
+
+    pub fn load_history(&mut self, path: &Path) {
+        let res = self.history.load(path);
+        match (res) {
+            Ok(v) => {
+                //add to history
+                return;
+            }
+            Err(e) => println!("error history: {e:?}"),
+        }
+    }
 }
-
-
-

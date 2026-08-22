@@ -34,3 +34,8 @@ echo hello\n
 echo world
 history -r <path_to_history_file>
 history
+echo hello]
+exit
+history -r test-hist.txt
+history
+codecrafters submit
