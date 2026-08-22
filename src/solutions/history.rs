@@ -67,12 +67,12 @@ impl HistHelper {
     pub fn write_history_to_file(&mut self, path: String) -> std::io::Result<()> {
         // remove first line
         //let path_string = path.to_string_lossy().into_owned();
-        let mut file = File::open(path)?;
-        //println!("path is {}", &path_string );
-
-        for (idx, val) in self.history.iter().enumerate() {
-             writeln!(file, "{}", val)?;
+        let mut file = OpenOptions::new().write(true).truncate(true).open(path)?;
+        for val in self.history.iter() {
+            writeln!(file, "{}", val)?;
         }
+
+        file.sync_all();
 
         return Ok(());
     }

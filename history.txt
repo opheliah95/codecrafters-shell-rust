@@ -1,20 +1,4 @@
 #V2
-echo 1
-echo 2
-exit
-echo i
-echo 2
-exit
-echo 1
-cho 2
-exit
-history
-echo 2
-history
-history 2
-history
-echo 2
-history
 exit
 history
 add 3
@@ -81,3 +65,37 @@ history -w ./cat/mew
 ls
 history -w ./cat/mew
 exit
+echo hello
+history -w ./cat/mew
+exit
+echo mew
+history -w ./cat/mew
+exit
+history -w ./cat/mew
+echo hello
+history -w ./cat/mew
+exit
+echo heool
+echo 2
+history -w ./cat/mew
+history
+history -w ./cat/mew
+exit
+echo 1
+echo 2
+history -w ./cat/mew
+exit
+echo mew
+echo hello
+history -w ./cat/mew
+exit
+echo hello
+history -w ./cat/mew
+exit
+echo hello
+history -w ./cat/mew
+exit
+echo world
+echo 2
+history -w ./cat/mew
+codecrafters submit

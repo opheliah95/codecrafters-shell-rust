@@ -409,7 +409,10 @@ async fn main() -> rustyline::Result<()> {
                                     }
                                     arg if arg == "-w" => {
                                         if ! path_exists {
-                                            std::fs::File::create(hist_path);
+                                            if let Some(parent) = Path::new(hist_path).parent() {
+                                                fs::create_dir_all(parent).expect("error fail to create parent");
+                                            }
+                                            let file = std::fs::File::create(hist_path).unwrap();
                                             //println!("file created {}", args[2]);
                                         } 
                                         let path = &args[2];
