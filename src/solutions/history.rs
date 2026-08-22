@@ -68,6 +68,7 @@ impl HistHelper {
 
         if reader.read_line(&mut first_line)? > 0 {
             if ["#V2", "", "\n"].contains(&first_line.trim()) {
+                println!("first line is {}", first_line);
                 first_line.pop();
             }
 
