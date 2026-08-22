@@ -1,7 +1,10 @@
 use rustyline::history::{DefaultHistory, History};
-use std::io::stdout;
+use std::fs::File;
+use std::fs::OpenOptions;
+use std::io::Read;
+use std::io::Write;
+use std::io::{BufRead, BufReader};
 use std::path::Path;
-use std::sync::Arc;
 
 pub struct HistHelper {
     pub history: DefaultHistory,
@@ -55,7 +58,30 @@ impl HistHelper {
         }
     }
 
-    pub fn write_history_to_file(&mut self, path: &Path) {
+    pub fn write_history_to_file(&mut self, path: &Path) -> std::io::Result<()> {
+        // remove first line
+        let path_string = path.to_string_lossy().into_owned();
+        let mut file =OpenOptions::new().read(true).write(true).open(path_string)?;
+        let mut reader = BufReader::new(&file);
+
+        let mut first_line = String::new();
+
+        if reader.read_line(&mut first_line)? > 0 {
+            if ["#V2", "", "\n"].contains(&first_line.trim()) {
+                first_line.pop();
+            }
+
+            let mut rest = String::new();
+            reader.read_to_string(&mut rest)?;
+
+            // set buffer
+            file.set_len(0)?;
+            file.write_all(rest.as_bytes());
+
+        }
+
         self.history.save(path);
+
+        return Ok(());
     }
 }
