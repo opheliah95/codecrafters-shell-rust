@@ -29,3 +29,8 @@ history
 echo run
 history
 codecrafters submit
+history -r history.txt
+echo hello\n
+echo world
+history -r <path_to_history_file>
+history

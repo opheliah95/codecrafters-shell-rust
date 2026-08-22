@@ -389,12 +389,20 @@ async fn main() -> rustyline::Result<()> {
                         cmd if *cmd == "cd" => cd_path(&args[1..]),
                         cmd if *cmd == "pwd" => get_pwd(),
                         cmd if *cmd == "history" => {
-                            if args.len() > 1 {
+                            if args.len() == 1 {
+                                history_handler.show_all_history();
+                                continue;
+                            }
+                            // handle -r
+                            if args[1] == "-r" && args.len() == 3 {
+                                continue;
+                            }
+
+                            if args.len() == 2 {
                                 let hist_limit = args[1].parse::<usize>().unwrap();
                                 history_handler.show_n_lines_history(hist_limit);
                                 continue;
                             }
-                            history_handler.show_all_history();
                         }
                         cmd if *cmd == "jobs" => {
                             // check if joblist is empty
