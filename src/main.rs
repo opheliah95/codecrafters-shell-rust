@@ -12,9 +12,9 @@ use rustyline::config::Configurer;
 use rustyline::hint::{Hint, Hinter, HistoryHinter};
 use rustyline::history::{DefaultHistory, History, SearchDirection};
 use rustyline::{
-    Changeset, Cmd, Completer, CompletionType, ConditionalEventHandler, Context, DefaultEditor,
-    Editor, Event, EventContext, EventHandler, Helper, Highlighter, KeyCode, KeyEvent, Modifiers,
-    RepeatCount, Result, Validator, Config
+    Changeset, Cmd, Completer, CompletionType, ConditionalEventHandler, Config, Context,
+    DefaultEditor, Editor, Event, EventContext, EventHandler, Helper, Highlighter, KeyCode,
+    KeyEvent, Modifiers, RepeatCount, Result, Validator,
 };
 use shellwords;
 use std::cell::Cell;
@@ -147,7 +147,7 @@ impl Completer for MyHelper {
             .collect();
 
         let mut matched_pwd_files = find_files_in_pwd(partial).unwrap();
-        println!("matches: {:?}" , matched_pwd_files);
+        println!("matches: {:?}", matched_pwd_files);
         matched_pwd_files.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
         let cloned_match_pwd = matched_pwd_files.clone();
         let mut pwd_all_matched: bool = true;
@@ -298,7 +298,7 @@ async fn main() -> rustyline::Result<()> {
     };
 
     //add config
-     let config = Config::builder()
+    let config = Config::builder()
         .history_ignore_space(true)
         .completion_type(CompletionType::List)
         .build();
@@ -309,15 +309,6 @@ async fn main() -> rustyline::Result<()> {
 
     editor.set_helper(Some(h));
     editor.set_completion_type(CompletionType::List);
-
-    // hist handler setup
-    let mut hist_handler_shared = history_handler.clone();
-    let mut editor_handler = history_handler.clone();
-    // //let key_vec: Vec<KeyEvent> = [KeyEvent(KeyCode::Down, Modifiers::NONE), KeyEvent(KeyCode::Up, Modifiers::NONE)].to_vec();
-    // editor.bind_sequence(
-    //     Event::Any,
-    //     EventHandler::Conditional(Box::new(editor_handler)),
-    // );
 
     editor.bind_sequence(KeyEvent(KeyCode::Down, Modifiers::NONE), Cmd::NextHistory);
     editor.bind_sequence(KeyEvent(KeyCode::Up, Modifiers::NONE), Cmd::PreviousHistory);
@@ -387,10 +378,10 @@ async fn main() -> rustyline::Result<()> {
 
                     // add cmd to history
                     editor.add_history_entry(line.as_str())?;
-                    hist_handler_shared.add_history(&line);
+                    history_handler.add_history(&line);
                     //#[cfg(feature = "with-file-history")]                      hist_handler_shared.add_history(&input);
                     editor.append_history("history.txt");
-                    hist_handler_shared.set_index_to_end();
+                    history_handler.set_index_to_end();
 
                     match &args[0] {
                         cmd if cmd.len() == 0 => continue,
@@ -400,10 +391,10 @@ async fn main() -> rustyline::Result<()> {
                         cmd if *cmd == "history" => {
                             if args.len() > 1 {
                                 let hist_limit = args[1].parse::<usize>().unwrap();
-                                hist_handler_shared.show_n_lines_history(hist_limit);
+                                history_handler.show_n_lines_history(hist_limit);
                                 continue;
                             }
-                            hist_handler_shared.show_all_history();
+                            history_handler.show_all_history();
                         }
                         cmd if *cmd == "jobs" => {
                             // check if joblist is empty

@@ -24,3 +24,8 @@ ls
 mkdir hello
 mkdir -r hello/hi
 cd hello
+echo panda
+history
+echo run
+history
+codecrafters submit
