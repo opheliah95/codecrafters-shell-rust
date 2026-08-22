@@ -51,3 +51,16 @@ exit
 history -w ./cat/mew
 history
 exit
+history -w ./cat/mew
+history -r
+history -w ./cat/mew
+EXIT
+exit
+history -w "./cat/mew"
+exit
+echo hello
+history -w ./cat/mew
+exit
+history -w ./cat/mew
+cat ./cat/mew
+exit

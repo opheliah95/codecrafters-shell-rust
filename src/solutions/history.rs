@@ -27,8 +27,13 @@ impl HistHelper {
     }
 
     pub fn show_all_history(&self) {
-        for (idx, val) in self.history.iter().enumerate() {
+        let mut idx = 0;
+        for val in self.history.iter() {
+            if val == "#V2" {
+                continue;
+            }
             println!("{:>4} {}", idx + 1, val);
+            idx += 1;
         }
     }
 
@@ -61,24 +66,30 @@ impl HistHelper {
     pub fn write_history_to_file(&mut self, path: &Path) -> std::io::Result<()> {
         // remove first line
         let path_string = path.to_string_lossy().into_owned();
-        let mut file =OpenOptions::new().read(true).write(true).open(path_string)?;
-        let mut reader = BufReader::new(&file);
+        let file = File::open(&path_string)?;
+        let reader = BufReader::new(file);
+        let mut lines: Vec<String> = Vec::new();
 
-        let mut first_line = String::new();
+        for line_result in reader.lines() {
+            let line = line_result?;
+            lines.push(line);
+        }
 
-        if reader.read_line(&mut first_line)? > 0 {
-            if ["#V2", "", "\n"].contains(&first_line.trim()) {
-                println!("first line is {}", first_line);
-                first_line.pop();
+        if lines.len() > 0 {
+            let first_line = lines[0].trim();
+            if first_line == "#V2" || first_line.is_empty() {
+                //println!("Removing first line: {}", lines[0]);
+                lines.remove(0);
             }
+        }
 
-            let mut rest = String::new();
-            reader.read_to_string(&mut rest)?;
+        let mut file = OpenOptions::new()
+            .write(true)
+            .truncate(true) // Clears the file immediately
+            .open(&path_string)?;
 
-            // set buffer
-            file.set_len(0)?;
-            file.write_all(rest.as_bytes());
-
+        for line in lines {
+            writeln!(file, "{}", line)?; // Writes line and a newline
         }
 
         self.history.save(path);
