@@ -409,10 +409,11 @@ async fn main() -> rustyline::Result<()> {
                                     }
                                     arg if arg == "-w" => {
                                         if ! path_exists {
-                                            let file = std::fs::File::create(hist_path);
+                                            std::fs::File::create(hist_path);
                                             //println!("file created {}", args[2]);
                                         } 
-                                        history_handler.write_history_to_file(hist_path);
+                                        let path = &args[2];
+                                        history_handler.write_history_to_file(path.to_string());
 
                                         continue;
                                     }
