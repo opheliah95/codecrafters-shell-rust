@@ -77,7 +77,19 @@ impl HistHelper {
         return Ok(());
     }
 
-    pub fn append_to_history(&mut self, path: &Path) {
-        self.history.append(path);
+    pub fn append_to_history(&mut self, path: String) -> std::io::Result<()> {
+        let mut file = File::open(path)?;
+        let mut buffer = BufReader::new(file);
+        for line in buffer.lines() {
+            let line = line.unwrap();
+            let line_str = &line.as_str();
+            if ["#V2", "", "\n"].contains(line_str) {
+                continue;
+            }
+            self.add_history(&line);
+        }
+       
+        return Ok(());
+
     }
 }

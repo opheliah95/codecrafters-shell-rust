@@ -399,6 +399,8 @@ async fn main() -> rustyline::Result<()> {
                                 // if hist file valid append to history
                                 let hist_path = Path::new(&args[2]);
                                 let path_exists = hist_path.try_exists().unwrap_or(false);
+                                let path = &args[2];
+
                                 match &args[1] {
                                     arg if arg.len() == 0 => continue,
                                     arg if arg == "-r" => {
@@ -408,20 +410,20 @@ async fn main() -> rustyline::Result<()> {
                                         continue;
                                     }
                                     arg if arg == "-w" => {
-                                        if ! path_exists {
+                                        if !path_exists {
                                             if let Some(parent) = Path::new(hist_path).parent() {
-                                                fs::create_dir_all(parent).expect("error fail to create parent");
+                                                fs::create_dir_all(parent)
+                                                    .expect("error fail to create parent");
                                             }
                                             let file = std::fs::File::create(hist_path).unwrap();
                                             //println!("file created {}", args[2]);
-                                        } 
-                                        let path = &args[2];
+                                        }
                                         history_handler.write_history_to_file(path.to_string());
 
                                         continue;
-                                    },
+                                    }
                                     arg if arg == "-a" => {
-                                        history_handler.append_to_history(hist_path);
+                                        history_handler.append_to_history(path.to_string());
                                         continue;
                                     }
                                     _ => continue,
