@@ -1,101 +1,13 @@
 #V2
-exit
-history
-add 3
-history
-clear
-ls
-mkdir hello
-mkdir -r hello/hi
-cd hello
-echo panda
-history
-echo run
-history
-codecrafters submit
-history -r history.txt
-echo hello\n
-echo world
-history -r <path_to_history_file>
-history
-echo hello]
-exit
-history -r test-hist.txt
-history
-codecrafters submit
-exit
-history w ./mytest/hist.txt
-exit
-history -w ./cat/meow
-exit
-history -w ./cat/mew
-exit
-history -w ./cat/mew
-exit
-history -w ./cat/mew
-history
-exit
-history -w ./cat/mew
-history -r
-history -w ./cat/mew
-EXIT
-exit
-history -w "./cat/mew"
-exit
-echo hello
-history -w ./cat/mew
-exit
-history -w ./cat/mew
-cat ./cat/mew
-exit
-echo hello
-history -w ./cat/mew
-exit
-history -w ./cat/mew
-exit
-history -r ./cat/mew
-history -w ./cat/mew
-cat ./cat
-cat ./cat/mew
-exit
-history -w ./cat/mew
-exit
-history -r ./cat/mew
-history -w ./cat/mew
-ls
-history -w ./cat/mew
-exit
-echo hello
-history -w ./cat/mew
-exit
-echo mew
-history -w ./cat/mew
-exit
-history -w ./cat/mew
-echo hello
-history -w ./cat/mew
-exit
-echo heool
+echo hello 
 echo 2
-history -w ./cat/mew
-history
-history -w ./cat/mew
+echo 3
+echo grape raspberry
+echo blueberry pineapple
+history -a /tmp/orange.txt
+history -a history.txt
+echo mango orang
+history -a history.txt
+echo apple
+history -a history.txt
 exit
-echo 1
-echo 2
-history -w ./cat/mew
-exit
-echo mew
-echo hello
-history -w ./cat/mew
-exit
-echo hello
-history -w ./cat/mew
-exit
-echo hello
-history -w ./cat/mew
-exit
-echo world
-echo 2
-history -w ./cat/mew
-codecrafters submit
