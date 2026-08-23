@@ -11,7 +11,7 @@ use std::path::Path;
 pub struct HistHelper {
     pub history: DefaultHistory,
     pub current_index: usize,
-    pub append_index: usize
+    pub append_index: usize,
 }
 
 impl HistHelper {
@@ -19,7 +19,7 @@ impl HistHelper {
         Self {
             history: DefaultHistory::new(),
             current_index: 0,
-            append_index: 0
+            append_index: 0,
         }
     }
     pub fn add_history(&mut self, line: &str) {
@@ -97,24 +97,21 @@ impl HistHelper {
         // }
 
         let mut file = OpenOptions::new().create(true).append(true).open(path)?;
-        let mut content: Vec<String> = self.history.iter()
-                                                        .skip(self.append_index)
-                                                        .map(|s| s.to_string())
-                                                        .collect();
+        let mut content: Vec<String> = self
+            .history
+            .iter()
+            .skip(self.append_index)
+            .map(|s| s.to_string())
+            .collect();
         for (idx, cmd) in content.iter().enumerate() {
-            if idx < self.get_len() -1 {
-                if content.contains(cmd) {
-                    continue;
-                }
+            if content.contains(cmd) {
+                continue;
+            }
+            if idx < self.get_len() - 1 {
                 writeln!(file, "{}", cmd)?;
             } else {
-                 if content.contains(cmd) {
-                   writeln!(file, "\n")?;
-                   continue;
-                }
                 writeln!(file, "{}\n", cmd)?;
             }
-            
         }
 
         self.append_index = self.get_len();
