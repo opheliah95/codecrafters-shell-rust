@@ -83,11 +83,7 @@ impl HistHelper {
         for (idx, val) in self.history.iter().enumerate() {
             let path_str = path.as_str();
             let existing = fs::read_to_string(path_str)?;
-            let mut new_content: String;
-            // if idx != self.get_len() - 1 && existing.contains(val)  {
-            //     continue;
-            // }
-            new_content = format!("{}\n{}", existing.trim(), val);
+            let mut new_content= format!("{}\n{}", existing.trim(), val);
             if idx == self.get_len() - 1 {
                 if existing.contains(val)  {
                     new_content = format!("\n");
