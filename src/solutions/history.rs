@@ -84,6 +84,9 @@ impl HistHelper {
             let path_str = path.as_str();
             let existing = fs::read_to_string(path_str)?;
             let mut new_content = format!("{}\n{}", existing.trim(), val);
+            if idx == self.get_len() -1 {
+                new_content = format!("{}\n{}\n", existing.trim(), val);
+            }
             fs::write(path, new_content)?;
         }
 
