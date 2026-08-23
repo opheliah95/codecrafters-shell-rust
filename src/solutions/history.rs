@@ -76,4 +76,8 @@ impl HistHelper {
 
         return Ok(());
     }
+
+    pub fn append_to_history(&mut self, path: &Path) {
+        self.history.append(path);
+    }
 }

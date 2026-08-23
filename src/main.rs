@@ -419,6 +419,10 @@ async fn main() -> rustyline::Result<()> {
                                         history_handler.write_history_to_file(path.to_string());
 
                                         continue;
+                                    },
+                                    arg if arg == "-a" => {
+                                        history_handler.append_to_history(hist_path);
+                                        continue;
                                     }
                                     _ => continue,
                                 }
