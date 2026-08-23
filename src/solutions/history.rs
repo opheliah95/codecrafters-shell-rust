@@ -90,7 +90,7 @@ impl HistHelper {
             new_content = format!("{}\n{}", existing.trim(), val);
             if idx == self.get_len() - 1 {
                 if existing.contains(val) && idx != 0 {
-                    new_content = format!("\n");
+                    //new_content = format!("\n");
                 } else {
                     new_content = format!("{}\n{}\n", existing.trim(), val);
                 }
