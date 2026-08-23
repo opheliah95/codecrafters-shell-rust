@@ -1,5 +1,6 @@
 use rustyline::history::{DefaultHistory, History};
 use std::fmt::write;
+use std::fs;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::Read;
@@ -78,10 +79,13 @@ impl HistHelper {
     }
 
     pub fn append_to_history(&mut self, path: String) -> std::io::Result<()> {
-        let mut file = OpenOptions::new().write(true).truncate(true).open(path)?;
+     
         //let mut buffer = BufReader::new(file);
         for val in self.history.iter() {
-            writeln!(file, "{}", val)?;
+            let existing = fs::read_to_string(path.as_str())?;
+            let new_content = format!("{}\n{}", val, existing);
+            
+            fs::write(path, new_content)?;
         }
 
         return Ok(());
