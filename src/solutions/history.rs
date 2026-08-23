@@ -107,7 +107,7 @@ impl HistHelper {
         for (idx, cmd) in content.iter().enumerate() {
             let path_str = path.as_str();
             let existing = fs::read_to_string(path_str)?;
-            if existing.contains(cmd) {
+            if existing.contains(cmd) && !cmd.contains("history -a"){
                 //println!("{} exists", cmd);
                 continue;
             }
