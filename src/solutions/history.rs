@@ -97,14 +97,18 @@ impl HistHelper {
         // }
 
         let mut file = OpenOptions::new().create(true).append(true).open(path)?;
-        let mut content: Vec<String> = self
+        let content: Vec<String> = self
             .history
             .iter()
             .skip(self.append_index)
             .map(|s| s.to_string())
             .collect();
+        //println!("content: {:?}", content);
         for (idx, cmd) in content.iter().enumerate() {
-            if content.contains(cmd) {
+            let path_str = path.as_str();
+            let existing = fs::read_to_string(path_str)?;
+            if existing.contains(cmd) {
+                //println!("{} exists", cmd);
                 continue;
             }
             if idx < self.get_len() - 1 {

@@ -1,3 +1,13 @@
 #V2
 history -a .cat/mew
 exit
+echo pineapple blueberry raspberry
+echo mew mewm ew
+history -a ./cat/mew
+exit
+echo papapa
+echo mememe
+echo 2
+hsitory -a ./cat/mew
+history -a ./cat/mew
+exit
