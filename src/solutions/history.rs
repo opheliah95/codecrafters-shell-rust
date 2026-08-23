@@ -111,11 +111,7 @@ impl HistHelper {
                 //println!("{} exists", cmd);
                 continue;
             }
-            if idx < self.get_len() - 1 {
-                writeln!(file, "{}", cmd)?;
-            } else {
-                writeln!(file, "{}\n", cmd)?;
-            }
+             writeln!(file, "{}", cmd)?;
         }
 
         self.append_index = self.get_len();
