@@ -84,7 +84,7 @@ impl HistHelper {
         for val in self.history.iter() {
             let path_str = path.as_str();
             let existing = fs::read_to_string(path_str)?;
-            let new_content = format!("{}\n{}", val, existing);
+            let new_content = format!("{}\n{}", existing, val);
             
             fs::write(path, new_content)?;
         }
