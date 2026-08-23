@@ -110,6 +110,7 @@ impl HistHelper {
             } else {
                  if content.contains(cmd) {
                    writeln!(file, "\n")?;
+                   continue;
                 }
                 writeln!(file, "{}\n", cmd)?;
             }
