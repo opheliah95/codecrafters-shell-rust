@@ -11,6 +11,7 @@ use std::path::Path;
 pub struct HistHelper {
     pub history: DefaultHistory,
     pub current_index: usize,
+    pub append_index: usize
 }
 
 impl HistHelper {
@@ -18,6 +19,7 @@ impl HistHelper {
         Self {
             history: DefaultHistory::new(),
             current_index: 0,
+            append_index: 0
         }
     }
     pub fn add_history(&mut self, line: &str) {
@@ -80,20 +82,41 @@ impl HistHelper {
 
     pub fn append_to_history(&mut self, path: &String) -> std::io::Result<()> {
         //let mut buffer = BufReader::new(file);
-        for (idx, val) in self.history.iter().enumerate() {
-            let path_str = path.as_str();
-            let existing = fs::read_to_string(path_str)?;
-            let mut new_content= format!("{}\n{}", existing.trim(), val);
-            if idx == self.get_len() - 1 {
-                if existing.contains(val)  {
-                    new_content = format!("\n");
-                } else {
-                    new_content = format!("{}\n{}\n", existing.trim(), val);
+        // for (idx, val) in self.history.iter().enumerate() {
+        //     let path_str = path.as_str();
+        //     let existing = fs::read_to_string(path_str)?;
+        //     let mut new_content= format!("{}\n{}", existing.trim(), val);
+        //     if idx == self.get_len() - 1 {
+        //         if existing.contains(val)  {
+        //             new_content = format!("\n");
+        //         } else {
+        //             new_content = format!("{}\n{}\n", existing.trim(), val);
+        //         }
+        //     }
+        //     fs::write(path, new_content)?;
+        // }
+
+        let mut file = OpenOptions::new().create(true).append(true).open(path)?;
+        let mut content: Vec<String> = self.history.iter()
+                                                        .skip(self.append_index)
+                                                        .map(|s| s.to_string())
+                                                        .collect();
+        for (idx, cmd) in content.iter().enumerate() {
+            if idx < self.get_len() -1 {
+                if content.contains(cmd) {
+                    continue;
                 }
+                writeln!(file, "{}", cmd)?;
+            } else {
+                 if content.contains(cmd) {
+                   writeln!(file, "\n")?;
+                }
+                writeln!(file, "{}\n", cmd)?;
             }
-            fs::write(path, new_content)?;
+            
         }
 
+        self.append_index = self.get_len();
         return Ok(());
     }
 }
