@@ -82,8 +82,7 @@ impl HistHelper {
         let mut buffer = BufReader::new(file);
         for line in buffer.lines() {
             let line = line.unwrap();
-            let line_str = &line.as_str();
-            if ["#V2", "", "\n"].contains(line_str) {
+            if line == "#V2" {
                 continue;
             }
             self.add_history(&line);
