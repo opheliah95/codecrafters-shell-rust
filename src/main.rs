@@ -423,7 +423,7 @@ async fn main() -> rustyline::Result<()> {
                                         continue;
                                     }
                                     arg if arg == "-a" => {
-                                        history_handler.append_to_history(path.to_string());
+                                        history_handler.append_to_history(path);
                                         continue;
                                     }
                                     _ => continue,

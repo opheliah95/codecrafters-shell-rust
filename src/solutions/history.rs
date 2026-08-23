@@ -78,11 +78,12 @@ impl HistHelper {
         return Ok(());
     }
 
-    pub fn append_to_history(&mut self, path: String) -> std::io::Result<()> {
+    pub fn append_to_history(&mut self, path: &String) -> std::io::Result<()> {
      
         //let mut buffer = BufReader::new(file);
         for val in self.history.iter() {
-            let existing = fs::read_to_string(path.as_str())?;
+            let path_str = path.as_str();
+            let existing = fs::read_to_string(path_str)?;
             let new_content = format!("{}\n{}", val, existing);
             
             fs::write(path, new_content)?;
