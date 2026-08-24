@@ -27,6 +27,7 @@ use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::{fs, vec};
 use tokio;
+use std::env;
 
 #[derive(Clone, Helper, Validator, Highlighter)]
 struct MyHelper {
@@ -314,6 +315,8 @@ async fn main() -> rustyline::Result<()> {
     editor.bind_sequence(KeyEvent(KeyCode::Up, Modifiers::NONE), Cmd::PreviousHistory);
 
     // history path
+    let hist_path_str =env::var("HISTFILE").unwrap_or_else(|_| "default".to_string());
+    //println!("hist path is {}", hist_path);
 
     // let mut file = fs::OpenOptions::new()
     //     .write(true)
@@ -397,7 +400,13 @@ async fn main() -> rustyline::Result<()> {
                             if args.len() == 3 {
                                 // check if history file is valid
                                 // if hist file valid append to history
-                                let hist_path = Path::new(&args[2]);
+                                let mut hist_path: &Path;
+                                if hist_path_str == "default" {
+                                    hist_path = Path::new(&args[2]);
+                                } else {
+                                    hist_path=Path::new(hist_path_str.as_str());
+                                }
+                                
                                 let path_exists = hist_path.try_exists().unwrap_or(false);
                                 let path = &args[2];
 
