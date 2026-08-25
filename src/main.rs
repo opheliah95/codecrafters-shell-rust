@@ -416,7 +416,7 @@ async fn main() -> rustyline::Result<()> {
                                     arg if arg.len() == 0 => continue,
                                     arg if arg == "-r" => {
                                         if path_exists {
-                                            println!("this will run");
+                                            println!("this will run: {}", hist_path_str);
                                             history_handler.load_history(hist_path);
                                         }
                                         continue;
