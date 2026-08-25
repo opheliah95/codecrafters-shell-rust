@@ -20,6 +20,7 @@ use shellwords;
 use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::HashSet;
+use std::env;
 use std::io::{Write, pipe, stdout};
 use std::path::Path;
 use std::process::Command;
@@ -27,7 +28,6 @@ use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::{fs, vec};
 use tokio;
-use std::env;
 
 #[derive(Clone, Helper, Validator, Highlighter)]
 struct MyHelper {
@@ -315,7 +315,7 @@ async fn main() -> rustyline::Result<()> {
     editor.bind_sequence(KeyEvent(KeyCode::Up, Modifiers::NONE), Cmd::PreviousHistory);
 
     // history path
-    let hist_path_str =env::var("HISTFILE").unwrap_or_else(|_| "default".to_string());
+    let hist_path_str = env::var("HISTFILE").unwrap_or_else(|_| "default".to_string());
     //println!("hist path is {}", hist_path);
 
     // let mut file = fs::OpenOptions::new()
@@ -394,7 +394,7 @@ async fn main() -> rustyline::Result<()> {
                         cmd if *cmd == "history" => {
                             if args.len() == 1 {
                                 let mut hist_path: &Path = Path::new(hist_path_str.as_str());
-                                if hist_path_str != "default" && hist_path.try_exists().unwrap()  {
+                                if hist_path_str != "default" && hist_path.try_exists().unwrap() {
                                     history_handler.clear_and_reload_hist_from_path(hist_path);
                                 }
                                 history_handler.show_all_history();
@@ -404,15 +404,10 @@ async fn main() -> rustyline::Result<()> {
                             if args.len() == 3 {
                                 // check if history file is valid
                                 // if hist file valid append to history
-                                let mut hist_path: &Path = Path::new(hist_path_str.as_str());
-                                let mut path: &String = &hist_path_str;
-                                if hist_path_str == "default" && hist_path.try_exists().unwrap() {
-                                    hist_path = Path::new(&args[2]);
-                                    path = &args[2];
-                                } 
-                                
+                                let mut hist_path: &Path = Path::new(&args[2]);
+                                let mut path: &String = &args[2];
                                 let path_exists = hist_path.try_exists().unwrap_or(false);
-                                 
+
                                 match &args[1] {
                                     arg if arg.len() == 0 => continue,
                                     arg if arg == "-r" => {

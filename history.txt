@@ -27,3 +27,5 @@ history
 exit
 history
 codecrafters submit
+clear
+exit
