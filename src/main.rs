@@ -396,7 +396,6 @@ async fn main() -> rustyline::Result<()> {
                                 let mut hist_path: &Path = Path::new(hist_path_str.as_str());
                                 if hist_path_str != "default" && hist_path.try_exists().unwrap()  {
                                     history_handler.clear_and_reload_hist_from_path(hist_path);
-                                    continue;
                                 }
                                 history_handler.show_all_history();
                                 continue;

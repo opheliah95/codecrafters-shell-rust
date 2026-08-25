@@ -11,3 +11,19 @@ echo 2
 hsitory -a ./cat/mew
 history -a ./cat/mew
 exit
+history
+exit
+history
+exit
+history
+exit
+history
+exit
+history
+exit
+history
+exit
+history
+exit
+history
+codecrafters submit
