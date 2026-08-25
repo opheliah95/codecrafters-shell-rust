@@ -45,3 +45,7 @@ exit
 history
 codecrafters submit
 exit
+echo new_command
+exit
+echo second
+exit
