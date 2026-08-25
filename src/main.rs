@@ -405,14 +405,12 @@ async fn main() -> rustyline::Result<()> {
                             if args.len() == 3 {
                                 // check if history file is valid
                                 // if hist file valid append to history
-                                let mut hist_path: &Path;
+                                let mut hist_path: &Path = Path::new(hist_path_str.as_str());
                                 let mut path: &String = &hist_path_str;
                                 if hist_path_str == "default" && hist_path.try_exists().unwrap() {
                                     hist_path = Path::new(&args[2]);
                                     path = &args[2];
-                                } else {
-                                    hist_path=Path::new(hist_path_str.as_str());
-                                }
+                                } 
                                 
                                 let path_exists = hist_path.try_exists().unwrap_or(false);
                                  
