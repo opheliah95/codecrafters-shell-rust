@@ -475,9 +475,20 @@ async fn main() -> rustyline::Result<()> {
                             job_list.list_jobs();
                             continue;
                         }
+                        cmd if *cmd == "declare" => {
+                            if args.len() == 3 {
+                                if args[1] == "-p" {
+                                    println!("declare: {}: not found", args[2]);
+                                }
+                            }
+                        }
+
                         cmd if *cmd == "type" => {
-                            if ["echo", "exit", "type", "pwd", "complete", "jobs", "history", "declare"]
-                                .contains(&args[1].as_str())
+                            if [
+                                "echo", "exit", "type", "pwd", "complete", "jobs", "history",
+                                "declare",
+                            ]
+                            .contains(&args[1].as_str())
                             {
                                 println!("{} is a shell builtin", &args[1]);
                                 job_list.display_last_job();
