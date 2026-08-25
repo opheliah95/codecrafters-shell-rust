@@ -29,3 +29,10 @@ history
 codecrafters submit
 clear
 exit
+history
+history -r ./cat/mew
+history
+exit
+history -r ./cat/mew
+history
+exit
