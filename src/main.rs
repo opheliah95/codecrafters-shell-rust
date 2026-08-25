@@ -393,7 +393,7 @@ async fn main() -> rustyline::Result<()> {
                         cmd if *cmd == "pwd" => get_pwd(),
                         cmd if *cmd == "history" => {
                             if args.len() == 1 {
-                                if hist_path_str.len() > 0 {
+                                if hist_path_str.len() > 0 && hist_path_str != "/dev/null"{
                                     //println!("running cmd: {} ", hist_path_str);
                                     let hist_env_path: &Path = Path::new(hist_path_str.as_str());
                                     let path_exist = hist_env_path.try_exists().unwrap();
@@ -416,7 +416,6 @@ async fn main() -> rustyline::Result<()> {
                                     arg if arg.len() == 0 => continue,
                                     arg if arg == "-r" => {
                                         if path_exists {
-                                            println!("this will run: {}", hist_path_str);
                                             history_handler.load_history(hist_path);
                                         }
                                         continue;
