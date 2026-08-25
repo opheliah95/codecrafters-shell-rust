@@ -92,6 +92,7 @@ impl HistHelper {
         //let path_string = path.to_string_lossy().into_owned();
         let mut file = OpenOptions::new().append(true).open(path)?;
         for val in self.history.iter() {
+            println!("write to file {}", val);
             writeln!(file, "{}", val)?;
         }
 
