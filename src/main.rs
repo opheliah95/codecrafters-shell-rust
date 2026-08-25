@@ -393,10 +393,7 @@ async fn main() -> rustyline::Result<()> {
                         cmd if *cmd == "pwd" => get_pwd(),
                         cmd if *cmd == "history" => {
                             if args.len() == 1 {
-                                let mut hist_path: &Path = Path::new(hist_path_str.as_str());
-                                if hist_path_str != "default" && hist_path.try_exists().unwrap() {
-                                    history_handler.clear_and_reload_hist_from_path(hist_path);
-                                }
+                                
                                 history_handler.show_all_history();
                                 continue;
                             }

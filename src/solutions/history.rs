@@ -44,7 +44,7 @@ impl HistHelper {
     pub fn show_n_lines_history(&self, hist_limit: usize) {
         let start = self.get_len() - hist_limit;
         for (idx, val) in self.history.iter().enumerate().skip(start) {
-            println!("{:>5}{:>2}", idx + 1, val);
+            println!("{:>4} {}", idx + 1, val);
         }
     }
 
