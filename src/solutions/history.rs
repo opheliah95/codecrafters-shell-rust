@@ -95,8 +95,6 @@ impl HistHelper {
             writeln!(file, "{}", val)?;
         }
 
-        file.sync_all();
-
         return Ok(());
     }
 
