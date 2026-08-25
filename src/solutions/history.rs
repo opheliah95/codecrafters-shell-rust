@@ -102,9 +102,13 @@ impl HistHelper {
         // remove first line
         //let path_string = path.to_string_lossy().into_owned();
         let mut file = OpenOptions::new().append(true).open(path)?;
+        let existing = fs::read_to_string(path)?;
+        let content = existing.lines().collect::<Vec<_>>();
+        let existing_set: std::collections::HashSet<_> = content.iter().collect();
         for val in self.history.iter() {
-            //println!("write to file {}", val);
-            writeln!(file, "{}", val)?;
+            if !existing_set.contains(&val.as_str()) {
+                writeln!(file, "{}", val)?;
+            }
         }
 
         return Ok(());

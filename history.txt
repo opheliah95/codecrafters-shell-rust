@@ -54,3 +54,10 @@ echo raw
 echo happy
 history
 exit
+history
+echo bum
+exit
+history
+echo pineapple blueberry banana
+history
+exit
