@@ -400,6 +400,7 @@ async fn main() -> rustyline::Result<()> {
                                     }
                                     let file = std::fs::File::create(hist_env_path).unwrap();
                                 }
+                                history_handler.add_history("exit");
                                 history_handler.write_history_to_file(hist_env_path);
                             }
                             std::process::exit(0)
