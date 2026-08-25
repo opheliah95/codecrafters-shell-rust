@@ -388,17 +388,28 @@ async fn main() -> rustyline::Result<()> {
 
                     match &args[0] {
                         cmd if cmd.len() == 0 => continue,
-                        cmd if *cmd == "exit" => std::process::exit(0),
+                        cmd if *cmd == "exit" => {
+                            if hist_path_str.len() > 0 && hist_path_str != "/dev/null" {
+                                //println!("running cmd: {} ", hist_path_str);
+                                let hist_env_path: &Path = Path::new(hist_path_str.as_str());
+                                let path_exist = hist_env_path.try_exists().unwrap();
+                                if path_exist {
+                                    history_handler.write_history_to_file(hist_env_path);
+                                }
+                            }
+                            std::process::exit(0)
+                        }
                         cmd if *cmd == "cd" => cd_path(&args[1..]),
                         cmd if *cmd == "pwd" => get_pwd(),
                         cmd if *cmd == "history" => {
                             if args.len() == 1 {
-                                if hist_path_str.len() > 0 && hist_path_str != "/dev/null"{
+                                if hist_path_str.len() > 0 && hist_path_str != "/dev/null" {
                                     //println!("running cmd: {} ", hist_path_str);
                                     let hist_env_path: &Path = Path::new(hist_path_str.as_str());
                                     let path_exist = hist_env_path.try_exists().unwrap();
                                     if path_exist {
-                                        history_handler.clear_and_reload_hist_from_path(hist_env_path);
+                                        history_handler
+                                            .clear_and_reload_hist_from_path(hist_env_path);
                                     }
                                 }
                                 history_handler.show_all_history();
@@ -429,7 +440,7 @@ async fn main() -> rustyline::Result<()> {
                                             let file = std::fs::File::create(hist_path).unwrap();
                                             //println!("file created {}", args[2]);
                                         }
-                                        history_handler.write_history_to_file(path.to_string());
+                                        history_handler.write_history_to_file(hist_path);
 
                                         continue;
                                     }
