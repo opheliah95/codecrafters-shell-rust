@@ -68,23 +68,32 @@ impl HistHelper {
         }
     }
 
-    pub fn clear_and_reload_hist_from_path(&mut self, path: &Path) {
+    pub fn clear_and_reload_hist_from_path(&mut self, path: &Path) -> std::io::Result<()>{
         // check if file is empty
         match std::fs::metadata(path) {
             Ok(metadata) => {
                 if metadata.len() == 0 {
-                    return;
+                    return Ok(());
                 }
             }
-            Err(_) => {
+            Err(e) => {
                 println!("Error loading metadata");
-                return;
+                return Err(e);
             }
         }
 
+        // init setup
+        let prev_hist: Vec<String> = self.history.iter().map (|v| v.to_owned()).collect();
         self.history.clear();
         self.load_history(path);
+        // add existing history
+        let mut file = OpenOptions::new().create(true).append(true).open(path)?;
+        for val in prev_hist.iter() {
+            writeln!(file, "{}", val)?;
+        }
         self.history.add("history");
+
+        return Ok(());
     }
 
     pub fn write_history_to_file(&mut self, path: &Path) -> std::io::Result<()> {
@@ -92,7 +101,7 @@ impl HistHelper {
         //let path_string = path.to_string_lossy().into_owned();
         let mut file = OpenOptions::new().append(true).open(path)?;
         for val in self.history.iter() {
-            println!("write to file {}", val);
+            //println!("write to file {}", val);
             writeln!(file, "{}", val)?;
         }
 

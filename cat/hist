@@ -1,2 +1,6 @@
 echo second
 exit
+echo second
+exit
+history
+exit

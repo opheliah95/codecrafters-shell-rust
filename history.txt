@@ -49,3 +49,8 @@ echo new_command
 exit
 echo second
 exit
+history
+echo raw
+echo happy
+history
+exit
