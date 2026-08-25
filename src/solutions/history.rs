@@ -68,7 +68,7 @@ impl HistHelper {
         }
     }
 
-    pub fn clear_and_reload_hist_from_path(&mut self, path: &Path) -> std::io::Result<()>{
+    pub fn clear_and_reload_hist_from_path(&mut self, path: &Path) -> std::io::Result<()> {
         // check if file is empty
         match std::fs::metadata(path) {
             Ok(metadata) => {
@@ -83,14 +83,16 @@ impl HistHelper {
         }
 
         // init setup
-        let prev_hist: Vec<String> = self.history.iter().map (|v| v.to_owned()).collect();
+        let prev_hist: Vec<String> = self.history.iter().map(|v| v.to_owned()).collect();
         self.history.clear();
-        self.load_history(path);
-        // add existing history
+
+        // add existing history to file
         let mut file = OpenOptions::new().create(true).append(true).open(path)?;
         for val in prev_hist.iter() {
             writeln!(file, "{}", val)?;
         }
+        //overwrite and load
+        self.load_history(path);
         self.history.add("history");
 
         return Ok(());
