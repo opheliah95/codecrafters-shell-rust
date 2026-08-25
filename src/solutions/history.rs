@@ -7,6 +7,7 @@ use std::io::Read;
 use std::io::Write;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
+use tokio::fs::metadata;
 
 pub struct HistHelper {
     pub history: DefaultHistory,
@@ -67,7 +68,20 @@ impl HistHelper {
         }
     }
 
-    pub fn clear_and_reload_hist_from_path (&mut self, path: &Path) {
+    pub fn clear_and_reload_hist_from_path(&mut self, path: &Path) {
+        // check if file is empty
+        match std::fs::metadata(path) {
+            Ok(metadata) => {
+                if metadata.len() == 0 {
+                    return;
+                }
+            }
+            Err(_) => {
+                println!("Error loading metadata");
+                return;
+            }
+        }
+
         self.history.clear();
         self.load_history(path);
         self.history.add("history");
@@ -87,7 +101,6 @@ impl HistHelper {
     }
 
     pub fn append_to_history(&mut self, path: &String) -> std::io::Result<()> {
-      
         let mut file = OpenOptions::new().create(true).append(true).open(path)?;
         let content: Vec<String> = self
             .history
@@ -99,11 +112,11 @@ impl HistHelper {
         for (idx, cmd) in content.iter().enumerate() {
             let path_str = path.as_str();
             let existing = fs::read_to_string(path_str)?;
-            if existing.contains(cmd) && !cmd.contains("history -a"){
+            if existing.contains(cmd) && !cmd.contains("history -a") {
                 //println!("{} exists", cmd);
                 continue;
             }
-             writeln!(file, "{}", cmd)?;
+            writeln!(file, "{}", cmd)?;
         }
 
         self.append_index = self.get_len();
