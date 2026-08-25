@@ -390,7 +390,7 @@ async fn main() -> rustyline::Result<()> {
                         cmd if cmd.len() == 0 => continue,
                         cmd if *cmd == "exit" => {
                             if hist_path_str.len() > 0 && hist_path_str != "/dev/null" {
-                                //println!("running cmd: {} ", hist_path_str);
+                                println!("running cmd: {} ", hist_path_str);
                                 let hist_env_path: &Path = Path::new(hist_path_str.as_str());
                                 let path_exist = hist_env_path.try_exists().unwrap();
                                 if !path_exist {

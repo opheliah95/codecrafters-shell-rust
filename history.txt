@@ -44,3 +44,4 @@ echo hello
 exit
 history
 codecrafters submit
+exit
