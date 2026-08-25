@@ -393,9 +393,14 @@ async fn main() -> rustyline::Result<()> {
                                 //println!("running cmd: {} ", hist_path_str);
                                 let hist_env_path: &Path = Path::new(hist_path_str.as_str());
                                 let path_exist = hist_env_path.try_exists().unwrap();
-                                if path_exist {
-                                    history_handler.write_history_to_file(hist_env_path);
+                                if !path_exist {
+                                    if let Some(parent) = Path::new(hist_env_path).parent() {
+                                        fs::create_dir_all(parent)
+                                            .expect("error fail to create parent");
+                                    }
+                                    let file = std::fs::File::create(hist_env_path).unwrap();
                                 }
+                                history_handler.write_history_to_file(hist_env_path);
                             }
                             std::process::exit(0)
                         }

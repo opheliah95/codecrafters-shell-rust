@@ -36,3 +36,11 @@ exit
 history -r ./cat/mew
 history
 exit
+echo exit
+echo start
+exit
+echo hi
+echo hello
+exit
+history
+codecrafters submit
