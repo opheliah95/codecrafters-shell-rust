@@ -476,7 +476,7 @@ async fn main() -> rustyline::Result<()> {
                             continue;
                         }
                         cmd if *cmd == "type" => {
-                            if ["echo", "exit", "type", "pwd", "complete", "jobs", "history"]
+                            if ["echo", "exit", "type", "pwd", "complete", "jobs", "history", "declare"]
                                 .contains(&args[1].as_str())
                             {
                                 println!("{} is a shell builtin", &args[1]);
