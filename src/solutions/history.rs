@@ -67,6 +67,11 @@ impl HistHelper {
         }
     }
 
+    pub fn clear_and_reload_hist_from_path (&mut self, path: &Path) {
+        self.history.clear();
+        self.history.load(path);
+    }
+
     pub fn write_history_to_file(&mut self, path: String) -> std::io::Result<()> {
         // remove first line
         //let path_string = path.to_string_lossy().into_owned();
