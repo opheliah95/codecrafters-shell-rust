@@ -315,7 +315,7 @@ async fn main() -> rustyline::Result<()> {
     editor.bind_sequence(KeyEvent(KeyCode::Up, Modifiers::NONE), Cmd::PreviousHistory);
 
     // history path
-    let hist_path_str = env::var("HISTFILE").unwrap_or_else(|_| "default".to_string());
+    let hist_path_str = env::var("HISTFILE").unwrap_or_else(|_| "".to_string());
     //println!("hist path is {}", hist_path);
 
     // let mut file = fs::OpenOptions::new()
@@ -393,7 +393,13 @@ async fn main() -> rustyline::Result<()> {
                         cmd if *cmd == "pwd" => get_pwd(),
                         cmd if *cmd == "history" => {
                             if args.len() == 1 {
-                                
+                                if hist_path_str.len() > 0 {
+                                    let hist_env_path: &Path = Path::new(hist_path_str.as_str());
+                                    let path_exist = hist_env_path.try_exists().unwrap();
+                                    if path_exist {
+                                        history_handler.clear_and_reload_hist_from_path(hist_env_path);
+                                    }
+                                }
                                 history_handler.show_all_history();
                                 continue;
                             }
