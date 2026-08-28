@@ -1,9 +1,9 @@
-use codecrafters_shell::solutions::handle_piped_cmds;
 #[allow(unused_imports)]
 use codecrafters_shell::solutions::{
     cd_path, check_file_extension, check_valid_path, find_exe_path_partial, find_files_in_pwd,
     get_pwd, handle_dual_command, handle_jobs, run_cmd, run_cmd_with_output, strip_trailing_nl,
 };
+use codecrafters_shell::solutions::{handle_piped_cmds, start_with_digit};
 
 use codecrafters_shell::solutions::cmd::{CompleteCmd, Job, JobList};
 use codecrafters_shell::solutions::history::HistHelper;
@@ -475,20 +475,25 @@ async fn main() -> rustyline::Result<()> {
                             if args.len() == 2 {
                                 let args_spilt: Vec<&str> = args[1].split("=").collect();
                                 if args_spilt.len() == 2 {
-                                    declare_map.insert(args_spilt[0].to_string(), args_spilt[1].to_string());
-
+                                    let key = args_spilt[0];
+                                    let val = args_spilt[1];
+                                    if (start_with_digit(key)) {
+                                        println!("declare: `{key}={val}': not a valid identifier");
+                                    } else {
+                                        declare_map.insert(key.to_string(), val.to_string());
+                                    }
+                                    continue;
                                 }
                             }
                             if args.len() == 3 {
                                 if args[1] == "-p" {
-                                     let key = &args[2].to_string();
+                                    let key = &args[2].to_string();
                                     if declare_map.contains_key(key) {
                                         let val = declare_map.get(key).unwrap();
                                         println!("declare -- {}=\"{}\"", key, val);
                                     } else {
                                         println!("declare: {}: not found", args[2]);
                                     }
-                                    
                                 }
                             }
                         }

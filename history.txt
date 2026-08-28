@@ -67,3 +67,8 @@ declare -p missing_variable
 declare foo=bar2
 declare -p foo
 codecrafters submit
+exit
+declare 23=x
+declare _FOO=bar
+declare -p _FOO
+codecrafters submit

@@ -760,13 +760,15 @@ pub mod solutions {
             }
         }
     }
-    // fn handle_complete_func(args: Vec<String> ){
-    //     match args.as_slice() {
-    //         ["complete", "-p" @..] => {
-    //             if args.len() < 3 {return };
-    //             let path = args[]
-    //             println!("complete -C '{path}' {cmd}");
-    //         }
-    //     }
-    // }
+
+    // staret with no
+    pub fn start_with_digit (var: &str) -> bool {
+        // match pattern "^[a-zA-Z_][a-zA-Z_0-9]*"
+        let re = Regex::new(r"^[a-zA-Z_][a-zA-Z_0-9]*").unwrap();
+        if re.is_match(var) {
+            return false;
+        }
+
+        return true;
+    }
 }
