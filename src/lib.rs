@@ -425,7 +425,8 @@ pub mod solutions {
     }
 
     pub fn run_cmd(args: &[String], map: &HashMap<String, String>) -> bool {
-        let new_params = expanding_vars(args, map);
+        let args_to_replace = &args[1..];
+        let new_params = expanding_vars(args_to_replace, map);
         let output = Command::new(&args[0]).args(new_params).output();
 
         match output {
