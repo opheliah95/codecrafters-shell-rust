@@ -106,9 +106,10 @@ impl HistHelper {
         let content = existing.lines().collect::<Vec<_>>();
         let existing_set: std::collections::HashSet<_> = content.iter().collect();
         for val in self.history.iter() {
-            if !existing_set.contains(&val.as_str()) {
-                writeln!(file, "{}", val)?;
-            }
+            writeln!(file, "{}", val)?;
+            // if !existing_set.contains(&val.as_str()) {
+            //     writeln!(file, "{}", val)?;
+            // }
         }
 
         return Ok(());
