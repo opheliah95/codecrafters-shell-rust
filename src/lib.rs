@@ -15,6 +15,7 @@ pub mod solutions {
     use std::io::BufRead;
     use std::sync::{Arc, Mutex};
     use tokio::io::{AsyncBufReadExt, BufReader};
+    use std::collections::HashMap;
 
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
@@ -400,8 +401,32 @@ pub mod solutions {
         }
     }
 
-    pub fn run_cmd(args: &[String]) -> bool {
-        let output = Command::new(&args[0]).args(&args[1..]).output();
+    pub fn expanding_vars(args: &[String], map: &HashMap<String, String>) -> Vec<String>{
+        // check if args starts with $
+        if args.len() == 0 {
+            return Vec::new();
+        }
+        let regex = Regex::new(r"^\$[a-zA-Z_][a-zA-Z_0-9]*$").unwrap();
+        let mut result =Vec::new();
+        for (idx, val) in args.iter().enumerate() {
+            if regex.is_match(val) {
+                let dollar_sign_removed = val[1..].to_string();
+                // println!("keys: {:?} and val is {}", map.keys(), val);
+                // println!("matched: {:?}", map.values());
+                let res = map.get(&dollar_sign_removed).unwrap().to_string();
+                result.push(res);
+            } else {
+                result.push(val.to_string());
+            }
+        }
+
+        return result;
+
+    }
+
+    pub fn run_cmd(args: &[String], map: &HashMap<String, String>) -> bool {
+        let new_params = expanding_vars(args, map);
+        let output = Command::new(&args[0]).args(new_params).output();
 
         match output {
             Ok(out) => {

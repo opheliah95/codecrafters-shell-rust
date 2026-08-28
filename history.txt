@@ -1,5 +1,4 @@
 #V2
-history -a .cat/mew
 exit
 echo pineapple blueberry raspberry
 echo mew mewm ew
@@ -75,4 +74,28 @@ codecrafters submit
 declare mango-strawberry=blueberry
 exit
 declare mango-strawberry=blueberry
+exit
+declare Variable_2=value2
+echo $Variable_1 $Variable_2
+exit
+declare Variable_1=Value_1
+echo $Variable_1 $Variable_2
+declare Variable_2=value2
+echo $Variable_1 $Variable_2
+declare Variable_1=value
+declare Variable_2=value2
+echo $Variable_1 $Variable_2
+exit
+declare Variable_1=value
+declare Variable_2=value2
+echo $Variable_1 $Variable_2
+declare Variable_1=value
+declare Variable_2=value2
+echo $Variable_1 $Variable_2
+declare Variable_1=value
+declare Variable_2=value2
+echo $Variable_1 $Variable_2
+declare Variable_1=value
+declare Variable_2=value2
+codecrafters submit
 exit

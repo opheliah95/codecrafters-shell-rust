@@ -616,7 +616,7 @@ async fn main() -> rustyline::Result<()> {
                                 job_id = job_id_temp;
                                 continue;
                             }
-                            if !run_cmd(&args) {
+                            if !run_cmd(&args, &declare_map) {
                                 println!("{}: command not found", input);
                                 continue;
                             }
