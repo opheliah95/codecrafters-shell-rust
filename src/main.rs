@@ -19,7 +19,7 @@ use rustyline::{
 use shellwords;
 use std::cell::Cell;
 use std::cell::RefCell;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::env;
 use std::io::{Write, pipe, stdout};
 use std::path::Path;
@@ -318,12 +318,8 @@ async fn main() -> rustyline::Result<()> {
     let hist_path_str = env::var("HISTFILE").unwrap_or_else(|_| "".to_string());
     //println!("hist path is {}", hist_path);
 
-    // let mut file = fs::OpenOptions::new()
-    //     .write(true)
-    //     .append(true)
-    //     .create(true)
-    //     .open("history.txt")
-    //     .unwrap();
+    // hashmap for declare
+    let mut declare_map: HashMap<String, String> = HashMap::new();
 
     #[cfg(feature = "with-file-history")]
     if editor.load_history("history.txt").is_err() {
@@ -476,9 +472,23 @@ async fn main() -> rustyline::Result<()> {
                             continue;
                         }
                         cmd if *cmd == "declare" => {
+                            if args.len() == 2 {
+                                let args_spilt: Vec<&str> = args[1].split("=").collect();
+                                if args_spilt.len() == 2 {
+                                    declare_map.insert(args_spilt[0].to_string(), args_spilt[1].to_string());
+
+                                }
+                            }
                             if args.len() == 3 {
                                 if args[1] == "-p" {
-                                    println!("declare: {}: not found", args[2]);
+                                     let key = &args[2].to_string();
+                                    if declare_map.contains_key(key) {
+                                        let val = declare_map.get(key).unwrap();
+                                        println!("declare -- {}=\"{}\"", key, val);
+                                    } else {
+                                        println!("declare: {}: not found", args[2]);
+                                    }
+                                    
                                 }
                             }
                         }

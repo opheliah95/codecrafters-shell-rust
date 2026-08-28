@@ -61,3 +61,9 @@ history
 echo pineapple blueberry banana
 history
 exit
+declare foo=bar
+declare -p foo
+declare -p missing_variable
+declare foo=bar2
+declare -p foo
+codecrafters submit
