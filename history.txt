@@ -72,3 +72,7 @@ declare 23=x
 declare _FOO=bar
 declare -p _FOO
 codecrafters submit
+declare mango-strawberry=blueberry
+exit
+declare mango-strawberry=blueberry
+exit

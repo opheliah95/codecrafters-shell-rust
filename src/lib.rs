@@ -764,8 +764,9 @@ pub mod solutions {
     // staret with no
     pub fn start_with_digit (var: &str) -> bool {
         // match pattern "^[a-zA-Z_][a-zA-Z_0-9]*"
-        let re = Regex::new(r"^[a-zA-Z_][a-zA-Z_0-9]*").unwrap();
-        if re.is_match(var) {
+        //println!("string si: {var}");
+        let re = Regex::new(r"^[a-zA-Z_][a-zA-Z_0-9]*$").unwrap();
+        if re.is_match(var){
             return false;
         }
 

@@ -474,6 +474,7 @@ async fn main() -> rustyline::Result<()> {
                         cmd if *cmd == "declare" => {
                             if args.len() == 2 {
                                 let args_spilt: Vec<&str> = args[1].split("=").collect();
+                                //println!("spilt = {:?}", args_spilt);
                                 if args_spilt.len() == 2 {
                                     let key = args_spilt[0];
                                     let val = args_spilt[1];
