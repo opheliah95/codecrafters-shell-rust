@@ -1,9 +1,5 @@
 #V2
 exit
-echo pineapple blueberry raspberry
-echo mew mewm ew
-history -a ./cat/mew
-exit
 echo papapa
 echo mememe
 echo 2
@@ -99,3 +95,7 @@ declare Variable_1=value
 declare Variable_2=value2
 codecrafters submit
 exit
+echo pear pineapple
+echo blueberry strawberry
+history
+codecrafters submit
