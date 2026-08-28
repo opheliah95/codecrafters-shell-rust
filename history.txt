@@ -1,6 +1,4 @@
 #V2
-exit
-echo papapa
 echo mememe
 echo 2
 hsitory -a ./cat/mew
@@ -98,4 +96,6 @@ exit
 echo pear pineapple
 echo blueberry strawberry
 history
+codecrafters submit
+exit
 codecrafters submit
