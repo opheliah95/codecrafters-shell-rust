@@ -435,7 +435,7 @@ pub mod solutions {
                 }
 
                 let res_str = res.join("");
-                res.push(res_str);
+                result.push(res_str);
                 
 
             }
