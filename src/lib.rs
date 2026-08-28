@@ -415,7 +415,32 @@ pub mod solutions {
                 // println!("matched: {:?}", map.values());
                 let res = map.get(&dollar_sign_removed).unwrap().to_string();
                 result.push(res);
-            } else {
+            } 
+            else if val.contains("$") {
+                let dollar_vec: Vec<&str> = val.split("$").collect();
+                let mut to_match = &dollar_vec[1..];
+                let mut res: Vec<String> = Vec::new();
+                res.push(dollar_vec[0].to_string());
+                
+                for  i in to_match.iter() {
+                    let hash_val = map.get(*i);
+                    match hash_val {
+                        Some(a) => {
+                            res.push(a.to_string());
+                        },
+                        None => {
+                            res.push(i.to_string());
+                        }
+                    }
+                }
+
+                let res_str = res.join("");
+                res.push(res_str);
+                
+
+            }
+            
+            else {
                 result.push(val.to_string());
             }
         }
