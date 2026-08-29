@@ -1,9 +1,4 @@
 #V2
-declare -p foo
-codecrafters submit
-exit
-declare 23=x
-declare _FOO=bar
 declare -p _FOO
 codecrafters submit
 declare mango-strawberry=blueberry
@@ -99,3 +94,8 @@ declare Raspberry_2=pear
 declare Apple_6=grape
 echo  banana_${Raspberry_2}_pineapple ${Apple_6}_strawberry
 exit
+declare greeting=hello
+echo ${greeting}world
+echo ${missing}world
+echo ${var2}_and${greeting}
+codecrafters submit

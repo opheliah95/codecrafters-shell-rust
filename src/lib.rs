@@ -413,11 +413,11 @@ pub mod solutions {
         // matching $
         for (idx, mut val) in args.iter().enumerate() {
             if regex_expanded.is_match(val) {
-                let r =regex_expanded .replace_all(val, |caps: &regex::Captures| {
+                let r = regex_expanded.replace_all(val, |caps: &regex::Captures| {
                     let var_name = &caps[1];
                     map.get(var_name)
                         .map(|s| s.to_string())
-                        .unwrap_or_else(|| caps[0].to_string()) // Keep original if not in map
+                        .unwrap_or_else(|| "".to_string()) // Keep original if not in map
                 });
                 result.push(r.into_owned());
             } else if regex.is_match(val) {
