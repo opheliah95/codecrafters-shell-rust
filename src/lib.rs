@@ -424,8 +424,11 @@ pub mod solutions {
                 let dollar_sign_removed = val[1..].to_string();
                 // println!("keys: {:?} and val is {}", map.keys(), val);
                 // println!("matched: {:?}", map.values());
-                let res = map.get(&dollar_sign_removed).unwrap().to_string();
-                result.push(res);
+                let res = map.get(&dollar_sign_removed);
+                match res {
+                    Some(v) => result.push(v.to_string()),
+                    None => result.push("".to_string()),
+                }
             } else if val.contains("$") {
                 let dollar_vec: Vec<&str> = val.split("$").collect();
                 let mut to_match = &dollar_vec[1..];
