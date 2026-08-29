@@ -1,54 +1,4 @@
 #V2
-echo mememe
-echo 2
-hsitory -a ./cat/mew
-history -a ./cat/mew
-exit
-history
-exit
-history
-exit
-history
-exit
-history
-exit
-history
-exit
-history
-exit
-history
-exit
-history
-codecrafters submit
-clear
-exit
-history
-history -r ./cat/mew
-history
-exit
-history -r ./cat/mew
-history
-exit
-echo exit
-echo start
-exit
-echo hi
-echo hello
-exit
-history
-codecrafters submit
-exit
-echo new_command
-exit
-echo second
-exit
-history
-echo raw
-echo happy
-history
-exit
-history
-echo bum
 exit
 history
 echo pineapple blueberry banana
@@ -98,4 +48,54 @@ echo blueberry strawberry
 history
 codecrafters submit
 exit
+codecrafters submit
+exit
+declare Var1=foo
+declare Var2=bar
+echo ${Var1}end
+declare Var2=bar
+echo ${Var1}end
+declare Var1=foo
+declare Var2=bar
+exit
+declare Var1=foo
+declare Var2=bar
+echo ${Var1}end
+echo ${Var1}and${Var2}
+exit
+declare Var1=foo
+declare Var2=bar
+echo ${Var1}end
+echo ${Var1}and${Var2}
+exit
+declare Var1=foo
+declare Var2=bar
+echo ${Var1}end
+exit
+declare Var1=foo
+declare Var2=bar
+echo ${Var1}end
+echo ${Var1}and${Var2}
+exit
+declare Var1=foo
+declare Var2=bar
+echo ${Var1}end
+echo ${Var1}and${Var2}
+exit
+declare Var1=foo
+declare Var2=bar
+echo ${Var1}end
+echo ${Var1}and${Var2}
+exit
+declare Var1=foo
+declare Var2=bar
+echo ${Var1}and${Var2}
+exit
+declare Var1=foo
+declare Var2=bar
+echo ${Var1}and${Var2}
+exit
+declare Var1=foo
+declare Var2=ba
+echo ${Var1}and${Var2}
 codecrafters submit
