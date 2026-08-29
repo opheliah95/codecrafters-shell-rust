@@ -431,7 +431,7 @@ pub mod solutions {
                 let res = map.get(&dollar_sign_removed);
                 match res {
                     Some(v) => result.push(v.to_string()),
-                    None => result.push("".to_string()),
+                    None =>{},
                 }
             } else if val.contains("$") {
                 let dollar_vec: Vec<&str> = val.split("$").collect();
