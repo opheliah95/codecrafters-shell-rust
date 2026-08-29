@@ -1,13 +1,4 @@
 #V2
-exit
-history
-echo pineapple blueberry banana
-history
-exit
-declare foo=bar
-declare -p foo
-declare -p missing_variable
-declare foo=bar2
 declare -p foo
 codecrafters submit
 exit
@@ -99,3 +90,12 @@ declare Var1=foo
 declare Var2=ba
 echo ${Var1}and${Var2}
 codecrafters submit
+declare Raspberry_2=pear\n
+echo banana_${Raspberry_2}_pineapple
+echo Raspberry_2
+echo ${Raspberry_2}
+exit
+declare Raspberry_2=pear
+declare Apple_6=grape
+echo  banana_${Raspberry_2}_pineapple ${Apple_6}_strawberry
+exit

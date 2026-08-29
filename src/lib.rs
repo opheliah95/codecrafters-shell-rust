@@ -9,13 +9,13 @@ pub mod solutions {
     use glob::glob;
     use regex::Regex;
     use shellwords;
+    use std::collections::HashMap;
     use std::fs;
     use std::fs::File;
     use std::fs::metadata;
     use std::io::BufRead;
     use std::sync::{Arc, Mutex};
     use tokio::io::{AsyncBufReadExt, BufReader};
-    use std::collections::HashMap;
 
     pub fn type_impl(input: &str) {
         let args = input.split(" ").collect::<Vec<&str>>();
@@ -401,60 +401,43 @@ pub mod solutions {
         }
     }
 
-    pub fn expanding_vars(args: &[String], map: &HashMap<String, String>) -> Vec<String>{
+    pub fn expanding_vars(args: &[String], map: &HashMap<String, String>) -> Vec<String> {
         // check if args starts with $
         if args.len() == 0 {
             return Vec::new();
         }
         let regex = Regex::new(r"^\$[a-zA-Z_][a-zA-Z_0-9]*$").unwrap();
         let regex_expanded = Regex::new(r"\$\{([a-zA-Z_][a-zA-Z_0-9]*)\}").unwrap();
-        let mut result =Vec::new();
+        let mut result = Vec::new();
 
-       
         // matching $
         for (idx, mut val) in args.iter().enumerate() {
             if regex_expanded.is_match(val) {
-                let mut fields: Vec<String> = regex_expanded.split(val). map(|v| v.to_string()).collect();
-                let matched_idx: Vec<usize> = fields.iter().enumerate().filter(|(i, v) | v.len() == 0).map(|(e, _)| e).collect();
-                let mut idx_clone: Vec<usize> = matched_idx.clone().into_iter().rev().collect();
-                //println!("the fields are: {:?} and matched are {:?}", fields, matched_idx);
-                for(_, [var]) in regex_expanded.captures_iter(val).map(|c| 
-                    c.extract()) {
-                        let mut map_val = map.get(var).unwrap().to_string();
-                        if map_val.len() > 0 {
-                            let idx = idx_clone.pop();
-                            match idx {
-                                Some (v) => {
-                                    fields[v] = map_val;
-                                    //println!("field is now {:?} and idx {}", fields, v);
-                                },
-                                None =>{}
-                            }
-
-                        }
-                    }
-                    let res = fields.join("");
-                    result.push(res);
-            }
-            else if regex.is_match(val) {
+                let r =regex_expanded .replace_all(val, |caps: &regex::Captures| {
+                    let var_name = &caps[1];
+                    map.get(var_name)
+                        .map(|s| s.to_string())
+                        .unwrap_or_else(|| caps[0].to_string()) // Keep original if not in map
+                });
+                result.push(r.into_owned());
+            } else if regex.is_match(val) {
                 let dollar_sign_removed = val[1..].to_string();
                 // println!("keys: {:?} and val is {}", map.keys(), val);
                 // println!("matched: {:?}", map.values());
                 let res = map.get(&dollar_sign_removed).unwrap().to_string();
                 result.push(res);
-            } 
-            else if val.contains("$") {
+            } else if val.contains("$") {
                 let dollar_vec: Vec<&str> = val.split("$").collect();
                 let mut to_match = &dollar_vec[1..];
                 let mut res: Vec<String> = Vec::new();
                 res.push(dollar_vec[0].to_string());
-                
-                for  i in to_match.iter() {
+
+                for i in to_match.iter() {
                     let hash_val = map.get(*i);
                     match hash_val {
                         Some(a) => {
                             res.push(a.to_string());
-                        },
+                        }
                         None => {
                             res.push(i.to_string());
                         }
@@ -463,17 +446,12 @@ pub mod solutions {
 
                 let res_str = res.join("");
                 result.push(res_str);
-                
-
-            }
-            
-            else {
+            } else {
                 result.push(val.to_string());
             }
         }
 
         return result;
-
     }
 
     pub fn run_cmd(args: &[String], map: &HashMap<String, String>) -> bool {
@@ -756,7 +734,9 @@ pub mod solutions {
                 return true;
             }
             cmd if *cmd == "type" => {
-                if ["echo", "exit", "type", "pwd", "complete", "jobs", "history"].contains(&args[1].as_str()) {
+                if ["echo", "exit", "type", "pwd", "complete", "jobs", "history"]
+                    .contains(&args[1].as_str())
+                {
                     println!("{} is a shell builtin", &args[1]);
 
                     return true;
@@ -824,7 +804,7 @@ pub mod solutions {
 
         for cmd in rest_cmds.iter() {
             current_stdout = built_in_pipe_handler(*cmd, Some(Stdio::from(current_stdout)));
-        };
+        }
 
         let reader = std::io::BufReader::new(current_stdout);
         for line in reader.lines() {
@@ -833,18 +813,18 @@ pub mod solutions {
                     if !content.is_empty() {
                         println!("{}", content)
                     }
-                },
+                }
                 Err(e) => eprintln!("Error reading line: {}", e),
             }
         }
     }
 
     // staret with no
-    pub fn start_with_digit (var: &str) -> bool {
+    pub fn start_with_digit(var: &str) -> bool {
         // match pattern "^[a-zA-Z_][a-zA-Z_0-9]*"
         //println!("string si: {var}");
         let re = Regex::new(r"^[a-zA-Z_][a-zA-Z_0-9]*$").unwrap();
-        if re.is_match(var){
+        if re.is_match(var) {
             return false;
         }
 
