@@ -419,7 +419,11 @@ pub mod solutions {
                         .map(|s| s.to_string())
                         .unwrap_or_else(|| "".to_string()) // Keep original if not in map
                 });
-                result.push(r.into_owned());
+
+                let final_output = r.into_owned();
+                if final_output.len() > 0 {
+                    result.push(final_output);
+                }
             } else if regex.is_match(val) {
                 let dollar_sign_removed = val[1..].to_string();
                 // println!("keys: {:?} and val is {}", map.keys(), val);
@@ -442,7 +446,7 @@ pub mod solutions {
                             res.push(a.to_string());
                         }
                         None => {
-                            res.push(i.to_string());
+                            //res.push(i.to_string());
                         }
                     }
                 }
